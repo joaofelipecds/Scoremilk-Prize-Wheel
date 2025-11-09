@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SCOREMILK PRIZE WHEEL</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Sans+MS:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+  }
+}
+</script>
+<style>
+  /* Keyframes for the Pointer Flick */
+  @keyframes flick-pointer {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(-15deg); }
+  }
+  
+  .is-flicking {
+    animation: flick-pointer 0.1s ease-in-out;
+  }
+
+  /* Keyframes for the Breathing Lights - Pattern A */
+  @keyframes breathing-light-A {
+    0%, 25%, 50%, 75%, 100% { 
+      fill: #111827; /* Dark 'off' color */
+    }
+    12.5% { fill: #ef4444; } /* Red */
+    62.5% { fill: #f8fafc; } /* White */
+  }
+
+  .breathing-light-A {
+    animation: breathing-light-A 3s infinite ease-in-out;
+  }
+
+  /* Keyframes for the Breathing Lights - Pattern B (Offset) */
+  @keyframes breathing-light-B {
+    0%, 25%, 50%, 75%, 100% { 
+      fill: #111827; /* Dark 'off' color */
+    }
+    37.5% { fill: #ef4444; } /* Red */
+    87.5% { fill: #f8fafc; } /* White */
+  }
+
+  .breathing-light-B {
+    animation: breathing-light-B 3s infinite ease-in-out;
+  }
+  
+  /* Keyframes for breathing text effect */
+  @keyframes breathing-text {
+    0%, 100% {
+      color: #00ff8c;
+    }
+    50% {
+      color: #8bf1c3;
+    }
+  }
+
+  .breathing-text {
+    animation: breathing-text 4s infinite ease-in-out;
+  }
+
+</style>
+</head>
+  <body class="bg-slate-900">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
