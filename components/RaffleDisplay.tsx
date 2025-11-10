@@ -52,8 +52,8 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
     if (!winner) return null;
 
     return (
-      <div className="text-center animate-fade-in absolute inset-0 flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm rounded-xl z-20">
-        <h3 className="text-xl text-slate-400">The winner is...</h3>
+      <div className="text-center animate-fade-in absolute inset-0 flex flex-col items-center justify-center bg-gray-950/80 backdrop-blur-sm rounded-xl z-20">
+        <h3 className="text-xl text-gray-400">The winner is...</h3>
         <p className="text-4xl sm:text-6xl font-bold my-2 text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-500 animate-pulse">
           {winner}
         </p>
@@ -77,9 +77,9 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
      if (participants.length >= 2 || isSpinning) return null;
      
      return (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-800/90 rounded-xl z-10">
-            <h2 className="text-2xl font-bold text-slate-300">Ready to Spin?</h2>
-            <p className="text-slate-400 mt-2">Add at least 2 participants.</p>
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/90 rounded-xl z-10">
+            <h2 className="text-2xl font-bold text-gray-300">Ready to Spin?</h2>
+            <p className="text-gray-400 mt-2">Add at least 2 participants.</p>
         </div>
      );
   };
@@ -129,7 +129,7 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
               onChange={(e) => onRaffleTitleChange(e.target.value)}
               disabled={isSpinning}
               aria-label="Raffle Name"
-              className="w-full bg-transparent text-center text-3xl font-bold text-slate-200 truncate focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-md py-1 transition disabled:opacity-70"
+              className="w-full bg-transparent text-center text-3xl font-bold text-gray-200 truncate focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-md py-1 transition disabled:opacity-70"
               placeholder="Enter raffle name..."
             />
           </div>
@@ -165,8 +165,8 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
       
       {raffleError && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={onClearRaffleError}>
-            <div className="bg-slate-800 p-8 rounded-lg shadow-xl w-full max-w-sm text-center animate-fade-in" onClick={(e) => e.stopPropagation()}>
-                <h2 className="text-xl font-bold mb-6 text-slate-200">{raffleError}</h2>
+            <div className="bg-gray-950 p-8 rounded-lg shadow-xl w-full max-w-sm text-center animate-fade-in" onClick={(e) => e.stopPropagation()}>
+                <h2 className="text-xl font-bold mb-6 text-gray-200">{raffleError}</h2>
                 <button onClick={onClearRaffleError} className="py-2 px-6 bg-indigo-600 hover:bg-indigo-700 rounded-md text-white font-semibold transition-colors">
                     OK
                 </button>
@@ -176,8 +176,8 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
 
       {showRemoveWinnerConfirm && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => { onReset(); setShowRemoveWinnerConfirm(false); }}>
-            <div className="bg-slate-800 p-8 rounded-lg shadow-xl w-full max-w-sm text-center animate-fade-in" onClick={(e) => e.stopPropagation()}>
-                <h2 className="text-xl font-bold mb-6 text-slate-200">Remove the last Winner?</h2>
+            <div className="bg-gray-950 p-8 rounded-lg shadow-xl w-full max-w-sm text-center animate-fade-in" onClick={(e) => e.stopPropagation()}>
+                <h2 className="text-xl font-bold mb-6 text-gray-200">Remove the last Winner?</h2>
                 <div className="flex justify-center gap-4">
                   <button 
                       onClick={() => {
@@ -193,7 +193,7 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
                           onReset();
                           setShowRemoveWinnerConfirm(false);
                       }} 
-                      className="py-2 px-6 bg-slate-600 hover:bg-slate-700 rounded-md text-white font-semibold transition-colors"
+                      className="py-2 px-6 bg-gray-600 hover:bg-gray-700 rounded-md text-white font-semibold transition-colors"
                   >
                       No
                   </button>

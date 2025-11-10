@@ -4,6 +4,7 @@ import ParticipantInput from './components/ParticipantInput';
 import ParticipantList from './components/ParticipantList';
 import RaffleDisplay from './components/RaffleDisplay';
 import Confetti from './components/Confetti';
+import ResolutionSwitcher from './components/ResolutionSwitcher';
 
 const getCoreName = (name: string): string => {
   if (!name) return "";
@@ -35,7 +36,9 @@ const App: React.FC = () => {
   const [raffleError, setRaffleError] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-
+  const [resolution, setResolution] = useState<'1920x1080' | '1366x768'>('1920x1080');
+  
+  const appContainerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<{
     context: AudioContext | null;
     tickSound: (() => void) | null;
@@ -111,6 +114,32 @@ const App: React.FC = () => {
       document.removeEventListener('fullscreenchange', handleFullScreenChange);
     };
   }, []);
+
+  // Effect for scaling the app content to fit the viewport
+  useEffect(() => {
+    const scaleApp = () => {
+      if (!appContainerRef.current) return;
+      
+      const [targetWidth, targetHeight] = resolution === '1920x1080' 
+        ? [1920, 1080] 
+        : [1366, 768];
+        
+      const { clientWidth: windowWidth, clientHeight: windowHeight } = document.documentElement;
+      
+      const scaleX = windowWidth / targetWidth;
+      const scaleY = windowHeight / targetHeight;
+      const scale = Math.min(scaleX, scaleY);
+      
+      appContainerRef.current.style.transform = `scale(${scale})`;
+    };
+
+    scaleApp();
+    window.addEventListener('resize', scaleApp);
+
+    return () => {
+      window.removeEventListener('resize', scaleApp);
+    };
+  }, [resolution]);
 
   // Inactivity timer logic
   const resetInactivityTimer = useCallback(() => {
@@ -650,62 +679,81 @@ const App: React.FC = () => {
     setWinner(null);
   }, []);
 
+  const toggleResolution = useCallback(() => {
+    setResolution(prev => prev === '1920x1080' ? '1366x768' : '1920x1080');
+  }, []);
+
+  const [width, height] = resolution === '1920x1080' ? [1920, 1080] : [1366, 768];
+
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 font-sans p-4 sm:p-6 lg:p-8 flex flex-col">
-      <header className="text-center mb-8">
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold breathing-text">
-          SCOREMILK PRIZE WHEEL
-        </h1>
-        <p className="text-slate-400 mt-2 text-xl">Want to be here? Participate in Scoremilk Tournaments and Engage on Social Media!</p>
-      </header>
+    <div className="w-screen h-screen bg-black flex items-center justify-center overflow-hidden">
+      <ResolutionSwitcher currentResolution={resolution} onToggleResolution={toggleResolution} />
       
-      {winner && <Confetti />}
+      <div 
+        ref={appContainerRef}
+        className="bg-gray-900 text-gray-100 font-sans flex flex-col origin-center transition-transform duration-300"
+        style={{ 
+          width: `${width}px`, 
+          height: `${height}px`,
+        }}
+      >
+        <div className="p-4 sm:p-6 lg:p-8 flex flex-col flex-grow h-full overflow-y-auto">
+          <header className="text-center mb-8">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold breathing-text">
+              SCOREMILK PRIZE WHEEL
+            </h1>
+            <p className="text-gray-400 mt-2 text-xl">Want to be here? Participate in Scoremilk Tournaments and Engage on Social Media!</p>
+          </header>
+          
+          {winner && <Confetti />}
 
-      <main className="flex-grow grid grid-cols-1 lg:grid-cols-3 lg:items-start gap-8 max-w-7xl w-full mx-auto">
-        <div className="lg:col-span-1 bg-slate-800/50 rounded-xl p-6 shadow-lg flex flex-col h-full">
-          <ParticipantInput 
-            onAddParticipant={addParticipant} 
-            onAddMultipleParticipants={addMultipleParticipants}
-            disabled={isSpinning} 
-            winnerHistory={winnerHistory}
-            isMuted={isMuted}
-            onToggleMute={toggleMute}
-            isFullscreen={isFullscreen}
-            onToggleFullScreen={toggleFullScreen}
-          />
-          <div className="mt-4 border-t border-slate-700 pt-4 flex-grow">
-            <ParticipantList
-              participants={participants}
-              onRemoveParticipant={removeParticipant}
-              onClearAll={clearAll}
-              isSpinning={isSpinning}
-            />
-          </div>
+          <main className="flex-grow grid grid-cols-1 lg:grid-cols-3 lg:items-start gap-8 max-w-7xl w-full mx-auto">
+            <div className="lg:col-span-1 bg-gray-950/50 rounded-xl p-6 shadow-lg flex flex-col h-full">
+              <ParticipantInput 
+                onAddParticipant={addParticipant} 
+                onAddMultipleParticipants={addMultipleParticipants}
+                disabled={isSpinning} 
+                winnerHistory={winnerHistory}
+                isMuted={isMuted}
+                onToggleMute={toggleMute}
+                isFullscreen={isFullscreen}
+                onToggleFullScreen={toggleFullScreen}
+              />
+              <div className="mt-4 border-t border-gray-700 pt-4 flex-grow">
+                <ParticipantList
+                  participants={participants}
+                  onRemoveParticipant={removeParticipant}
+                  onClearAll={clearAll}
+                  isSpinning={isSpinning}
+                />
+              </div>
+            </div>
+
+            <div className="lg:col-span-2 bg-gray-950/50 rounded-xl shadow-lg flex items-center justify-center p-6 min-h-[400px] lg:h-auto">
+              <RaffleDisplay
+                participants={wheelParticipants}
+                winner={winner}
+                isSpinning={isSpinning}
+                onSpin={handleSpin}
+                onStopSpin={handleStopSpin}
+                onReset={resetRaffle}
+                onRemoveWinnerEntries={removeWinnerEntries}
+                onShuffle={shuffleWheel}
+                rotation={rotation}
+                tickCount={tickCount}
+                raffleTitle={raffleTitle}
+                onRaffleTitleChange={handleRaffleTitleChange}
+                raffleError={raffleError}
+                onClearRaffleError={() => setRaffleError(null)}
+              />
+            </div>
+          </main>
+
+          <footer className="text-center text-gray-500 mt-8 py-4">
+            <p>Built with React, TypeScript, and Tailwind CSS.</p>
+          </footer>
         </div>
-
-        <div className="lg:col-span-2 bg-slate-800/50 rounded-xl shadow-lg flex items-center justify-center p-6 min-h-[400px] lg:h-auto">
-          <RaffleDisplay
-            participants={wheelParticipants}
-            winner={winner}
-            isSpinning={isSpinning}
-            onSpin={handleSpin}
-            onStopSpin={handleStopSpin}
-            onReset={resetRaffle}
-            onRemoveWinnerEntries={removeWinnerEntries}
-            onShuffle={shuffleWheel}
-            rotation={rotation}
-            tickCount={tickCount}
-            raffleTitle={raffleTitle}
-            onRaffleTitleChange={handleRaffleTitleChange}
-            raffleError={raffleError}
-            onClearRaffleError={() => setRaffleError(null)}
-          />
-        </div>
-      </main>
-
-      <footer className="text-center text-slate-500 mt-8 py-4">
-        <p>Built with React, TypeScript, and Tailwind CSS.</p>
-      </footer>
+      </div>
     </div>
   );
 };

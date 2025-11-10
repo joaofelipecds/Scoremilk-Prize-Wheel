@@ -192,8 +192,8 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation }) => {
   return (
     <svg viewBox="0 0 1000 1000" className="w-full h-full">
       <g>
-        <circle cx="500" cy="500" r="500" fill="#1e293b" />
-        <circle cx="500" cy="500" r="496" fill="#334155" />
+        <circle cx="500" cy="500" r="500" fill="#1f2937" />
+        <circle cx="500" cy="500" r="496" fill="#374151" />
         {lights}
       </g>
       
@@ -210,9 +210,9 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation }) => {
       </g>
       
       <g>
-          <circle cx="500" cy="500" r="40" fill="#334155" />
-          <circle cx="500" cy="500" r="35" fill="#475569" />
-          <circle cx="500" cy="500" r="10" fill="#1e293b" />
+          <circle cx="500" cy="500" r="40" fill="#374151" />
+          <circle cx="500" cy="500" r="35" fill="#4b5563" />
+          <circle cx="500" cy="500" r="10" fill="#1f2937" />
       </g>
 
       <defs>

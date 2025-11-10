@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { TrashIcon } from './icons';
 
@@ -16,7 +17,7 @@ const ParticipantList: React.FC<ParticipantListProps> = ({ participants, onRemov
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-xl font-semibold text-slate-300">
+        <h2 className="text-xl font-semibold text-gray-300">
           Participants ({participants.length})
         </h2>
         <button
@@ -32,13 +33,13 @@ const ParticipantList: React.FC<ParticipantListProps> = ({ participants, onRemov
           {participants.map((participant, index) => (
             <li
               key={`${participant}-${index}`} // More robust key
-              className="flex items-center justify-between bg-slate-700/50 rounded-md px-4 py-2 animate-fade-in break-inside-avoid"
+              className="flex items-center justify-between bg-gray-900/50 rounded-md px-4 py-2 animate-fade-in break-inside-avoid"
             >
-              <span className="text-slate-200 truncate">{participant}</span>
+              <span className="text-gray-200 truncate">{participant}</span>
               <button
                 onClick={() => onRemoveParticipant(index)}
                 disabled={isSpinning}
-                className="text-slate-400 hover:text-red-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-gray-400 hover:text-red-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label={`Remove ${participant}`}
               >
                 <TrashIcon />
@@ -47,7 +48,7 @@ const ParticipantList: React.FC<ParticipantListProps> = ({ participants, onRemov
           ))}
         </ul>
       ) : (
-        <div className="flex-grow flex items-center justify-center text-slate-500 text-center">
+        <div className="flex-grow flex items-center justify-center text-gray-500 text-center">
             <p>Add some names to get started!</p>
         </div>
       )}
