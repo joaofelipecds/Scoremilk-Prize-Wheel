@@ -973,8 +973,7 @@ const App: React.FC = () => {
                 winnerHistory={winnerHistory}
                 isMuted={isMuted}
                 onToggleMute={toggleMute}
-                isFullscreen={isFullscreen}
-                onToggleFullScreen={toggleFullScreen}
+                onShuffle={shuffleWheel}
               />
               <div className="mt-4 border-t border-gray-700 pt-4 flex-grow min-h-0">
                 <ParticipantList
@@ -996,7 +995,6 @@ const App: React.FC = () => {
                 onStopSpin={handleStopSpin}
                 onReset={resetRaffle}
                 onRemoveWinnerEntries={removeWinnerEntries}
-                onShuffle={shuffleWheel}
                 rotation={rotation}
                 tickCount={tickCount}
               />

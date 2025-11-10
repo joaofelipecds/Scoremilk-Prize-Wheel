@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import Wheel from './Wheel';
 
@@ -10,7 +11,6 @@ interface RaffleDisplayProps {
   onStopSpin: () => void;
   onReset: () => void;
   onRemoveWinnerEntries: (name: string | null) => void;
-  onShuffle: () => void;
   rotation: number;
   tickCount: number;
 }
@@ -24,7 +24,6 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
   onStopSpin,
   onReset,
   onRemoveWinnerEntries,
-  onShuffle,
   rotation,
   tickCount,
 }) => {
@@ -103,20 +102,6 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
           className={`relative w-full max-h-full max-w-[1000px] aspect-square ${canSpin || isSpinning ? 'cursor-pointer' : ''}`}
           onClick={handleWheelClick}
         >
-          {participants.length >= 2 && !isSpinning && (
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onShuffle();
-                }}
-                disabled={isSpinning}
-                className="absolute top-[-57px] left-[-8px] z-10 py-2 px-4 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-slate-900 text-sm font-bold rounded-md shadow-lg transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none hover:scale-105 disabled:hover:scale-100"
-                aria-label="Shuffle wheel participants"
-            >
-                SHUFFLE
-            </button>
-          )}
-
           {participants.length >= 2 && (
             <>
               <div 
