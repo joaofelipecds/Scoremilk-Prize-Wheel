@@ -29,44 +29,48 @@
     animation: flick-pointer 0.1s ease-in-out;
   }
 
-  /* Keyframes for the Breathing Lights - Pattern A */
-  @keyframes breathing-light-A {
-    0%, 25%, 50%, 75%, 100% { 
-      fill: #111827; /* Dark 'off' color */
+  /* Keyframes for the wave light-up effect on the wheel lights */
+  @keyframes wave-light-up-ball {
+    0%, 100% {
+      fill: url(#glass-bulb-gradient);
+      filter: none;
     }
-    12.5% { fill: #ef4444; } /* Red */
-    62.5% { fill: #f8fafc; } /* White */
-  }
-
-  .breathing-light-A {
-    animation: breathing-light-A 3s infinite ease-in-out;
-  }
-
-  /* Keyframes for the Breathing Lights - Pattern B (Offset) */
-  @keyframes breathing-light-B {
-    0%, 25%, 50%, 75%, 100% { 
-      fill: #111827; /* Dark 'off' color */
+    50% {
+      fill: #ffffff;
+      filter: drop-shadow(0 0 8px #ffffff) drop-shadow(0 0 16px rgba(255, 255, 255, 0.7));
     }
-    37.5% { fill: #ef4444; } /* Red */
-    87.5% { fill: #f8fafc; } /* White */
   }
 
-  .breathing-light-B {
-    animation: breathing-light-B 3s infinite ease-in-out;
+  .wave-light-ball {
+    animation: wave-light-up-ball 4s infinite;
   }
   
-  /* Keyframes for breathing text effect */
-  @keyframes breathing-text {
+  /* Keyframes for the wave light-up effect on the title */
+  @keyframes wave-light-up {
     0%, 100% {
       color: #00ff8c;
+      text-shadow: none;
     }
     50% {
       color: #8bf1c3;
+      text-shadow: 0 0 7px #8bf1c3, 0 0 15px #00ff8c;
     }
   }
 
-  .breathing-text {
-    animation: breathing-text 4s infinite ease-in-out;
+  .wave-letter {
+    color: #00ff8c;
+    animation: wave-light-up 4s infinite;
+  }
+  
+  /* Keyframes for the raffle name input blink */
+  @keyframes blink-raffle-name {
+    50% {
+      box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.5); /* A light purple to match theme */
+    }
+  }
+
+  .is-blinking {
+    animation: blink-raffle-name 0.6s ease-in-out;
   }
 
 </style>

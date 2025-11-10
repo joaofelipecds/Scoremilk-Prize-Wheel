@@ -1,24 +1,26 @@
+
 import React from 'react';
 
 interface ResolutionSwitcherProps {
-  currentResolution: '1920x1080' | '1366x768';
-  onToggleResolution: () => void;
+  isScaled: boolean;
+  onToggle: () => void;
 }
 
 const ResolutionSwitcher: React.FC<ResolutionSwitcherProps> = ({
-  currentResolution,
-  onToggleResolution,
+  isScaled,
+  onToggle,
 }) => {
-  const nextResolution = currentResolution === '1920x1080' ? '1366x768' : '1920x1080';
+  const buttonText = isScaled ? 'Adjust to screen size' : 'Use Scaled View';
+  const ariaLabel = isScaled ? 'Switch to fit screen size' : 'Switch to scaled view';
 
   return (
     <div className="fixed top-4 left-4 z-50">
       <button
-        onClick={onToggleResolution}
-        className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-md shadow-lg transition-colors duration-200"
-        aria-label={`Switch resolution to ${nextResolution}`}
+        onClick={onToggle}
+        className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 text-lg rounded-lg shadow-lg transition-colors duration-200"
+        aria-label={ariaLabel}
       >
-        Switch to {nextResolution}
+        {buttonText}
       </button>
     </div>
   );

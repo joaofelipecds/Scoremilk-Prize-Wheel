@@ -6,6 +6,8 @@ import RaffleDisplay from './components/RaffleDisplay';
 import Confetti from './components/Confetti';
 import ResolutionSwitcher from './components/ResolutionSwitcher';
 
+const logoUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGNsaXBQYXRoIGlkPSJsb2dvLWNsaXAiPjxwYXRoIGQ9Ik04NSAyNUgxNVYxNUMxNSAxMi4yMzg2IDE3LjIzODYgMTAgMjAgMTBIOEM4Mi43NjE0IDEwIDg1IDEyLjIzODYgODUgMTVWMjVaIi8+PHBhdGggZD0iTTE1IDI1TDUgNDBWOTBIOTVWNDBMODUgMjVIMTVaIi8+PC9jbGlwUGF0aD48L2RlZnM+PGcgY2xpcC1wYXRoPSJ1cmwoI2xvZ28tY2xpcCkiPjxnIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMyI+PHBhdGggZD0iTTIwIDAgTDAgMjAiLz48cGF0aCBkPSJNNDAgMCBMMCA0MCIvPjxwYXRoIGQ9Ik02MCAwIEwwIDYwIi8+PHBhdGggZD0iTTgwIDAgTDAgODAiLz48cGF0aCBkPSJNMTAwIDAgTDAgMTAwIi8+PHBhdGggZD0iTTEyMCAwIEwwIDEyMCIvPjxwYXRoIGQ9Ik0xNDAgMCBMMCAxNDAiLz48cGF0aCBkPSJNMTYwIDAgTDAgMTYwIi8+PHBhdGggZD0iTTE4MCAwIEwwIDE4MCIvPjwvZz48L2c+PHBhdGggZD0iTTg1IDI1SDE1VjE1QzE1IDEyLjIzODYgMTcuMjM4NiAxMCAyMCAxMEg4MEM4Mi43NjE0IDEwIDg1IDEyLjIzODYgODUgMTVWMjVaIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTUgMjVMNSA0MFY5MEg5NVY0MEw4NSAyNUgxNVoiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==';
+
 const getCoreName = (name: string): string => {
   if (!name) return "";
   // Extract only alphabetic characters to form the core name for comparison.
@@ -36,13 +38,16 @@ const App: React.FC = () => {
   const [raffleError, setRaffleError] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-  const [resolution, setResolution] = useState<'1920x1080' | '1366x768'>('1920x1080');
+  const [isScaledMode, setIsScaledMode] = useState<boolean>(true);
   
   const appContainerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<{
     context: AudioContext | null;
     tickSound: (() => void) | null;
     winSound: (() => void) | null;
+    stopSound: (() => void) | null;
+    shuffleSound: (() => void) | null;
+    eraserSound: (() => void) | null;
     backgroundMusic: {
       sources: (OscillatorNode | AudioBufferSourceNode)[];
       timeouts: number[];
@@ -51,6 +56,9 @@ const App: React.FC = () => {
     context: null,
     tickSound: null,
     winSound: null,
+    stopSound: null,
+    shuffleSound: null,
+    eraserSound: null,
     backgroundMusic: null,
   });
   const masterGainRef = useRef<GainNode | null>(null);
@@ -115,22 +123,25 @@ const App: React.FC = () => {
     };
   }, []);
 
-  // Effect for scaling the app content to fit the viewport
+  // Effect for scaling the app content to fit the viewport or fitting to screen
   useEffect(() => {
     const scaleApp = () => {
       if (!appContainerRef.current) return;
       
-      const [targetWidth, targetHeight] = resolution === '1920x1080' 
-        ? [1920, 1080] 
-        : [1366, 768];
+      if (isScaledMode) {
+        const targetWidth = 1920;
+        const targetHeight = 1080;
         
-      const { clientWidth: windowWidth, clientHeight: windowHeight } = document.documentElement;
-      
-      const scaleX = windowWidth / targetWidth;
-      const scaleY = windowHeight / targetHeight;
-      const scale = Math.min(scaleX, scaleY);
-      
-      appContainerRef.current.style.transform = `scale(${scale})`;
+        const { clientWidth: windowWidth, clientHeight: windowHeight } = document.documentElement;
+        
+        const scaleX = windowWidth / targetWidth;
+        const scaleY = windowHeight / targetHeight;
+        const scale = Math.min(scaleX, scaleY);
+        
+        appContainerRef.current.style.transform = `scale(${scale})`;
+      } else {
+        appContainerRef.current.style.transform = 'none';
+      }
     };
 
     scaleApp();
@@ -139,7 +150,7 @@ const App: React.FC = () => {
     return () => {
       window.removeEventListener('resize', scaleApp);
     };
-  }, [resolution]);
+  }, [isScaledMode]);
 
   // Inactivity timer logic
   const resetInactivityTimer = useCallback(() => {
@@ -388,6 +399,55 @@ const App: React.FC = () => {
   }, []);
   
   const shuffleWheel = useCallback(() => {
+    // --- Audio Logic ---
+    if (!audioRef.current.context) {
+      try {
+        const AudioCtxt = window.AudioContext || (window as any).webkitAudioContext;
+        audioRef.current.context = new AudioCtxt();
+      } catch (e) {
+        console.error("Web Audio API is not supported in this browser.");
+      }
+    }
+    const context = audioRef.current.context;
+    if (context && context.state === 'suspended') {
+      context.resume();
+    }
+
+    if (context && !audioRef.current.shuffleSound) {
+        audioRef.current.shuffleSound = () => {
+            if (!context) return;
+            const now = context.currentTime;
+            const duration = 0.15;
+
+            // Create a square wave oscillator for a classic 8-bit sound
+            const osc = context.createOscillator();
+            osc.type = 'square';
+
+            // A quick upward pitch slide, characteristic of a "select" sound
+            const startFrequency = 261.63; // C4
+            const endFrequency = 349.23;   // F4
+            osc.frequency.setValueAtTime(startFrequency, now);
+            osc.frequency.linearRampToValueAtTime(endFrequency, now + duration * 0.5);
+
+            // Create a sharp volume envelope for a short "bleep"
+            const gainNode = context.createGain();
+            gainNode.gain.setValueAtTime(0, now);
+            gainNode.gain.linearRampToValueAtTime(0.2, now + 0.01); // Quick attack
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration); // Fast decay
+
+            // Connect the audio graph and play the sound
+            osc.connect(gainNode);
+            gainNode.connect(context.destination);
+            osc.start(now);
+            osc.stop(now + duration);
+        };
+    }
+
+    if (audioRef.current.shuffleSound) {
+        audioRef.current.shuffleSound();
+    }
+    // --- End Audio Logic ---
+
     setWheelParticipants(prev => {
       const shuffled = [...prev];
       for (let i = shuffled.length - 1; i > 0; i--) {
@@ -423,116 +483,235 @@ const App: React.FC = () => {
     }
     
     if (context && !audioRef.current.tickSound) {
-      audioRef.current.tickSound = () => {
-        if (!context) return;
-        const now = context.currentTime;
-        const osc = context.createOscillator();
-        const gain = context.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(800, now);
-        gain.gain.setValueAtTime(0.1, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
-        osc.connect(gain);
-        gain.connect(context.destination);
-        osc.start(now);
-        osc.stop(now + 0.05);
-      };
+        audioRef.current.tickSound = () => {
+            if (!context) return;
+            const now = context.currentTime;
+            const masterGain = context.createGain();
+            // Lowered master volume for a gentler overall sound
+            masterGain.gain.setValueAtTime(0.12, now);
+            masterGain.connect(context.destination);
+
+            // --- The "Tap" part - A softer noise burst ---
+            const noise = context.createBufferSource();
+            const bufferSize = context.sampleRate * 0.05; // shorter buffer
+            const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            noise.buffer = buffer;
+
+            const noiseFilter = context.createBiquadFilter();
+            // Use a lowpass filter to remove harsh high frequencies, making it sound more like a "tap" than a "click"
+            noiseFilter.type = 'lowpass';
+            noiseFilter.frequency.value = 6000;
+            noiseFilter.Q.value = 1;
+
+            const noiseGain = context.createGain();
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(masterGain);
+
+            // A very short, sharp envelope for the tap
+            noiseGain.gain.setValueAtTime(1.0, now);
+            noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.02); // Faster decay
+            noise.start(now);
+            noise.stop(now + 0.02);
+
+
+            // --- The "Gentle Ring" part - Sine wave oscillators ---
+            // Lower, more harmonic frequencies for a softer tone
+            const frequencies = [1800, 2500, 3200];
+            const oscGain = context.createGain();
+            oscGain.connect(masterGain);
+            
+            frequencies.forEach(freq => {
+                const osc = context.createOscillator();
+                // Use sine waves for a pure, gentle tone instead of harsh square waves
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now);
+                osc.detune.setValueAtTime(Math.random() * 8 - 4, now);
+                osc.connect(oscGain);
+                osc.start(now);
+                osc.stop(now + 0.07); // Shorter ring duration
+            });
+            
+            // Softer envelope for the ringing tone
+            oscGain.gain.setValueAtTime(0.25, now);
+            oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+        };
     }
 
     if (context && !audioRef.current.winSound) {
-       audioRef.current.winSound = () => {
-        if (!context) return;
-        const now = context.currentTime;
-        const masterGain = context.createGain();
-        masterGain.gain.setValueAtTime(0.4, now);
-        masterGain.connect(context.destination);
-
-        // Simple Reverb for a grander feel
-        const reverb = context.createConvolver();
-        const reverbTime = 1.5;
-        const decay = 2.0;
-        const sampleRate = context.sampleRate;
-        const len = sampleRate * reverbTime;
-        const impulse = context.createBuffer(2, len, sampleRate);
-        const impulseL = impulse.getChannelData(0);
-        const impulseR = impulse.getChannelData(1);
-        for (let i = 0; i < len; i++) {
-            impulseL[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
-            impulseR[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
-        }
-        reverb.buffer = impulse;
-        masterGain.connect(reverb);
-        reverb.connect(context.destination);
-        
-        // --- Brass Fanfare ---
-        const fanfareGain = context.createGain();
-        fanfareGain.connect(masterGain);
-        
-        // Use 3 oscillators for a rich, chorus-like brass sound
-        const oscs = [context.createOscillator(), context.createOscillator(), context.createOscillator()];
-        oscs.forEach((osc, i) => {
-            osc.type = 'sawtooth';
-            const detune = i === 1 ? 7 : i === 2 ? -7 : 0; // Detune for richness
-            osc.detune.setValueAtTime(detune, now);
-            osc.connect(fanfareGain);
-            osc.start(now);
-        });
-
-        // Triumphant Arpeggio
-        const notes = [
-            { freq: 196.00, duration: 0.15 }, // G3
-            { freq: 261.63, duration: 0.15 }, // C4
-            { freq: 329.63, duration: 0.15 }, // E4
-            { freq: 392.00, duration: 0.15 }, // G4
-            { freq: 523.25, duration: 0.60 }  // C5 (held longer)
-        ];
-        let noteStartTime = now;
-        const gap = 0.05;
-
-        notes.forEach((note) => {
-            if (note.freq > 0) {
-                oscs.forEach(osc => osc.frequency.setValueAtTime(note.freq, noteStartTime));
-                
-                // ADSR envelope for a brass "stab"
-                fanfareGain.gain.setValueAtTime(0, noteStartTime);
-                fanfareGain.gain.linearRampToValueAtTime(0.6, noteStartTime + 0.02); // Fast attack
-                fanfareGain.gain.exponentialRampToValueAtTime(0.2, noteStartTime + note.duration); // Decay
-            }
-            noteStartTime += note.duration + gap;
-        });
-
-
-        // --- Cymbal Crash ---
-        const lastNote = notes[notes.length - 1];
-        const cymbalTime = noteStartTime - (lastNote.duration + gap); // At the start of the last note
-        const noise = context.createBufferSource();
-        const bufferSize = context.sampleRate * 1.5;
-        const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-            data[i] = Math.random() * 2 - 1; // White noise
-        }
-        noise.buffer = buffer;
-
-        const noiseFilter = context.createBiquadFilter();
-        noiseFilter.type = 'highpass';
-        noiseFilter.frequency.value = 4000;
-
-        const noiseGain = context.createGain();
-        noise.connect(noiseFilter);
-        noiseFilter.connect(noiseGain);
-        noiseGain.connect(masterGain);
-
-        noise.start(cymbalTime);
-        noiseGain.gain.setValueAtTime(0.5, cymbalTime);
-        noiseGain.gain.exponentialRampToValueAtTime(0.001, cymbalTime + 1.2);
-
-        // Cleanup
-        const stopTime = now + 4;
-        oscs.forEach(osc => osc.stop(stopTime));
-        noise.stop(stopTime);
+      audioRef.current.winSound = () => {
+          if (!context) return;
+          const now = context.currentTime;
+          const masterGain = context.createGain();
+          masterGain.gain.setValueAtTime(0.4, now); // A bit louder for more impact
+          masterGain.connect(context.destination);
+  
+          // Reverb for a grander, more spacious feel
+          const reverb = context.createConvolver();
+          const reverbTime = 2.5, decay = 2.0;
+          const len = context.sampleRate * reverbTime;
+          const impulse = context.createBuffer(2, len, context.sampleRate);
+          for (let channel = 0; channel < 2; channel++) {
+              const impulseChannel = impulse.getChannelData(channel);
+              for (let i = 0; i < len; i++) {
+                  impulseChannel[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+              }
+          }
+          reverb.buffer = impulse;
+          masterGain.connect(reverb);
+          reverb.connect(context.destination);
+          
+          // --- NEW Celebratory Sound Elements ---
+  
+          // 1. Kick Drum for a powerful start to the final chord
+          const kickTime = now + 0.4;
+          const kickOsc = context.createOscillator();
+          kickOsc.frequency.setValueAtTime(150, kickTime);
+          kickOsc.frequency.exponentialRampToValueAtTime(0.001, kickTime + 0.5);
+  
+          const kickGain = context.createGain();
+          kickGain.gain.setValueAtTime(1, kickTime);
+          kickGain.gain.exponentialRampToValueAtTime(0.001, kickTime + 0.5);
+          
+          kickOsc.connect(kickGain);
+          kickGain.connect(masterGain);
+          kickOsc.start(kickTime);
+          kickOsc.stop(kickTime + 0.5);
+  
+          // 2. Fast, ascending arpeggio to build excitement
+          const arpeggioNotes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
+          arpeggioNotes.forEach((freq, i) => {
+              const noteTime = now + i * 0.1;
+              const osc = context.createOscillator();
+              osc.type = 'triangle'; // A pure, bright tone
+              osc.frequency.setValueAtTime(freq, noteTime);
+  
+              const gain = context.createGain();
+              gain.gain.setValueAtTime(0, noteTime);
+              gain.gain.linearRampToValueAtTime(0.5, noteTime + 0.01);
+              gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.2);
+              
+              osc.connect(gain);
+              gain.connect(masterGain);
+              osc.start(noteTime);
+              osc.stop(noteTime + 0.2);
+          });
+  
+          // 3. The Big Final Chord - richer and fuller
+          const finalChordTime = now + 0.4;
+          const finalChordNotes = [261.63, 329.63, 392.00, 523.25, 659.25]; // C Major with an added E5
+          finalChordNotes.forEach((freq, i) => {
+              const osc = context.createOscillator();
+              osc.type = i % 2 === 0 ? 'sawtooth' : 'square';
+              osc.frequency.setValueAtTime(freq, finalChordTime);
+              osc.detune.setValueAtTime(i * 5 - 10, finalChordTime);
+              
+              const gain = context.createGain();
+              gain.gain.setValueAtTime(0, finalChordTime);
+              gain.gain.linearRampToValueAtTime(0.3, finalChordTime + 0.05);
+              gain.gain.exponentialRampToValueAtTime(0.001, finalChordTime + 3.0);
+  
+              osc.connect(gain);
+              gain.connect(masterGain);
+              osc.start(finalChordTime);
+              osc.stop(finalChordTime + 3.1);
+          });
+  
+          // 4. Shimmery Cymbal Crash
+          const noise = context.createBufferSource();
+          const bufferSize = context.sampleRate * 2.5;
+          const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+          noise.buffer = buffer;
+  
+          const noiseGain = context.createGain();
+          noiseGain.gain.setValueAtTime(0.6, finalChordTime);
+          noiseGain.gain.exponentialRampToValueAtTime(0.001, finalChordTime + 2.2);
+  
+          // Use multiple filters for a more realistic, metallic shimmer
+          const bandpass1 = context.createBiquadFilter();
+          bandpass1.type = 'bandpass';
+          bandpass1.frequency.value = 8000;
+          bandpass1.Q.value = 0.5;
+  
+          const bandpass2 = context.createBiquadFilter();
+          bandpass2.type = 'bandpass';
+          bandpass2.frequency.value = 12000;
+          bandpass2.Q.value = 0.5;
+          
+          const highpass = context.createBiquadFilter();
+          highpass.type = 'highpass';
+          highpass.frequency.value = 5000;
+  
+          noise.connect(highpass);
+          highpass.connect(bandpass1);
+          highpass.connect(bandpass2);
+          bandpass1.connect(noiseGain);
+          bandpass2.connect(noiseGain);
+          noiseGain.connect(masterGain);
+  
+          noise.start(finalChordTime);
+          noise.stop(finalChordTime + 2.5);
       };
     }
+
+    if (context && !audioRef.current.stopSound) {
+      audioRef.current.stopSound = () => {
+          if (!context) return;
+          const now = context.currentTime;
+          const masterGain = context.createGain();
+          masterGain.gain.setValueAtTime(0.4, now);
+          masterGain.connect(context.destination);
+  
+          // --- The "Clunk" part - A low-frequency noise burst ---
+          const noise = context.createBufferSource();
+          const bufferSize = context.sampleRate * 0.1;
+          const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+              data[i] = Math.random() * 2 - 1;
+          }
+          noise.buffer = buffer;
+  
+          const noiseFilter = context.createBiquadFilter();
+          noiseFilter.type = 'lowpass';
+          noiseFilter.frequency.setValueAtTime(500, now);
+          noiseFilter.Q.value = 1;
+  
+          const noiseGain = context.createGain();
+          noise.connect(noiseFilter);
+          noiseFilter.connect(noiseGain);
+          noiseGain.connect(masterGain);
+  
+          noiseGain.gain.setValueAtTime(1.0, now);
+          noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+          noise.start(now);
+          noise.stop(now + 0.1);
+  
+          // --- The short "Metallic" part ---
+          const frequencies = [600, 950];
+          const oscGain = context.createGain();
+          oscGain.connect(masterGain);
+          
+          frequencies.forEach(freq => {
+              const osc = context.createOscillator();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(freq, now);
+              osc.detune.setValueAtTime(Math.random() * 10 - 5, now);
+              osc.connect(oscGain);
+              osc.start(now);
+              osc.stop(now + 0.15);
+          });
+          
+          oscGain.gain.setValueAtTime(0.3, now);
+          oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+      };
+   }
     
     setIsSpinning(true);
     setWinner(null);
@@ -548,30 +727,31 @@ const App: React.FC = () => {
     const randomOffset = Math.random() * segmentAngle * 0.8 - (segmentAngle * 0.4);
     const targetRotation = fullRotations + targetStopAngle + randomOffset;
     
-    const duration = 19000;
+    const duration = 15000;
     let startTime: number | null = null;
     const startRotation = rotation % 360;
     
     const easeOutExpo = (x: number): number => x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
     
     let lastTickAngle = startRotation;
-    const soundTriggerTime = duration - 800;
-    let soundTriggered = false;
 
     const spin = (timestamp: number) => {
         if (!startTime) startTime = timestamp;
         const elapsedTime = timestamp - startTime;
-
-        if (elapsedTime >= soundTriggerTime && !soundTriggered) {
-          if (audioRef.current.winSound) audioRef.current.winSound();
-          soundTriggered = true;
-        }
 
         if (elapsedTime >= duration) {
             const finalWinner = wheelParticipants[winnerIndex];
             setRotation(targetRotation);
             setWinner(finalWinner);
             setIsSpinning(false);
+
+            // The sound originally played 200ms after the wheel stopped.
+            // Playing it 200ms earlier means it plays immediately (0ms delay).
+            setTimeout(() => {
+                if (audioRef.current.winSound) {
+                    audioRef.current.winSound();
+                }
+            }, 0);
 
             const newWinnerEntry = {
               winnerName: finalWinner,
@@ -606,9 +786,7 @@ const App: React.FC = () => {
 
   }, [wheelParticipants, isSpinning, rotation, raffleTitle]);
 
-  const handleStopSpin = useCallback(() => {
-    if (!isSpinning) return;
-  
+  const animateWheelToStart = useCallback((onComplete?: () => void) => {
     if (animationFrameId.current) {
       cancelAnimationFrame(animationFrameId.current);
       animationFrameId.current = null;
@@ -629,11 +807,13 @@ const App: React.FC = () => {
   
       if (elapsedTime >= returnDuration) {
         setRotation(targetReturnRotation);
-        setIsSpinning(false); // Officially end the spin state
         if (animationFrameId.current) {
           cancelAnimationFrame(animationFrameId.current);
         }
         animationFrameId.current = null;
+        if (onComplete) {
+          onComplete();
+        }
         return;
       }
   
@@ -646,11 +826,24 @@ const App: React.FC = () => {
     };
   
     animationFrameId.current = requestAnimationFrame(animateReturn);
-  }, [isSpinning, rotation, preSpinRotation]);
+  }, [rotation, preSpinRotation]);
+
+  const handleStopSpin = useCallback(() => {
+    if (!isSpinning) return;
+
+    if (audioRef.current.stopSound) {
+      audioRef.current.stopSound();
+    }
+  
+    animateWheelToStart(() => {
+      setIsSpinning(false); // Officially end the spin state
+    });
+  }, [isSpinning, animateWheelToStart]);
 
   const resetRaffle = useCallback(() => {
     setWinner(null);
-  }, []);
+    animateWheelToStart();
+  }, [animateWheelToStart]);
 
   const removeWinnerEntries = useCallback((winnerName: string | null) => {
     if (!winnerName) return;
@@ -675,34 +868,117 @@ const App: React.FC = () => {
   };
 
   const clearAll = useCallback(() => {
+    // --- Audio Logic ---
+    if (!audioRef.current.context) {
+      try {
+        const AudioCtxt = window.AudioContext || (window as any).webkitAudioContext;
+        audioRef.current.context = new AudioCtxt();
+      } catch (e) {
+        console.error("Web Audio API is not supported in this browser.");
+      }
+    }
+    const context = audioRef.current.context;
+    if (context && context.state === 'suspended') {
+      context.resume();
+    }
+
+    if (context && !audioRef.current.eraserSound) {
+        audioRef.current.eraserSound = () => {
+            if (!context) return;
+            const now = context.currentTime;
+            const masterGain = context.createGain();
+            masterGain.gain.setValueAtTime(0.4, now); // Master volume for the effect
+            masterGain.connect(context.destination);
+
+            // --- Part 1: "Thump" of trash hitting the bottom ---
+            const thumpOsc = context.createOscillator();
+            thumpOsc.type = 'sine';
+            thumpOsc.frequency.setValueAtTime(150, now);
+            thumpOsc.frequency.exponentialRampToValueAtTime(30, now + 0.15);
+
+            const thumpGain = context.createGain();
+            thumpGain.gain.setValueAtTime(0.7, now);
+            thumpGain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+
+            thumpOsc.connect(thumpGain).connect(masterGain);
+            thumpOsc.start(now);
+            thumpOsc.stop(now + 0.2);
+
+            // --- Part 2: "Crinkle/Rustle" of paper/plastic ---
+            const bufferSize = context.sampleRate * 0.25;
+            const noiseBuffer = context.createBuffer(1, bufferSize, context.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+            const noiseSource = context.createBufferSource();
+            noiseSource.buffer = noiseBuffer;
+
+            const noiseFilter = context.createBiquadFilter();
+            noiseFilter.type = 'bandpass';
+            noiseFilter.frequency.setValueAtTime(5000, now);
+            noiseFilter.Q.setValueAtTime(20, now);
+
+            const noiseGain = context.createGain();
+            // A few quick bursts to sound like rustling
+            noiseGain.gain.setValueAtTime(0, now);
+            noiseGain.gain.linearRampToValueAtTime(0.6, now + 0.02);
+            noiseGain.gain.exponentialRampToValueAtTime(0.1, now + 0.08);
+            noiseGain.gain.linearRampToValueAtTime(0.5, now + 0.1);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+            noiseSource.connect(noiseFilter).connect(noiseGain).connect(masterGain);
+            noiseSource.start(now);
+            noiseSource.stop(now + 0.25);
+        };
+    }
+
+    if (audioRef.current.eraserSound) {
+        audioRef.current.eraserSound();
+    }
+    // --- End Audio Logic ---
     setParticipants([]);
     setWinner(null);
   }, []);
 
-  const toggleResolution = useCallback(() => {
-    setResolution(prev => prev === '1920x1080' ? '1366x768' : '1920x1080');
+  const toggleScreenMode = useCallback(() => {
+    setIsScaledMode(prev => !prev);
   }, []);
 
-  const [width, height] = resolution === '1920x1080' ? [1920, 1080] : [1366, 768];
+  const containerClasses = isScaledMode
+    ? 'origin-center transition-transform duration-300'
+    : 'w-full h-full';
+
+  const containerStyle = isScaledMode ? { width: '1920px', height: '1080px' } : {};
+
+  const mainTitle = "SCOREMILK PRIZE WHEEL";
 
   return (
     <div className="w-screen h-screen bg-black flex items-center justify-center overflow-hidden">
-      <ResolutionSwitcher currentResolution={resolution} onToggleResolution={toggleResolution} />
+      <ResolutionSwitcher isScaled={isScaledMode} onToggle={toggleScreenMode} />
       
       <div 
         ref={appContainerRef}
-        className="bg-gray-900 text-gray-100 font-sans flex flex-col origin-center transition-transform duration-300"
-        style={{ 
-          width: `${width}px`, 
-          height: `${height}px`,
-        }}
+        className={`bg-gray-900 text-gray-100 font-sans flex flex-col ${containerClasses}`}
+        style={containerStyle}
       >
         <div className="p-4 sm:p-6 lg:p-8 flex flex-col flex-grow h-full overflow-y-auto">
-          <header className="text-center mb-8">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold breathing-text">
-              SCOREMILK PRIZE WHEEL
-            </h1>
-            <p className="text-gray-400 mt-2 text-xl">Want to be here? Participate in Scoremilk Tournaments and Engage on Social Media!</p>
+          <header className="flex justify-center items-center mb-8 gap-6">
+            <img src={logoUrl} alt="Scoremilk Logo" className="w-20 h-20" />
+            <div className="text-left">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold">
+                {mainTitle.split('').map((char, index) => (
+                  <span
+                    key={index}
+                    className="wave-letter"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    {char === ' ' ? '\u00A0' : char}
+                  </span>
+                ))}
+              </h1>
+              <p className="text-gray-400 mt-2 text-xl">Want to be here? Participate in Scoremilk Tournaments and Engage on Social Media!</p>
+            </div>
           </header>
           
           {winner && <Confetti />}
@@ -732,6 +1008,7 @@ const App: React.FC = () => {
             <div className="lg:col-span-2 bg-gray-950/50 rounded-xl shadow-lg flex items-center justify-center p-6 min-h-[400px] lg:h-auto">
               <RaffleDisplay
                 participants={wheelParticipants}
+                originalParticipants={participants}
                 winner={winner}
                 isSpinning={isSpinning}
                 onSpin={handleSpin}
@@ -750,7 +1027,7 @@ const App: React.FC = () => {
           </main>
 
           <footer className="text-center text-gray-500 mt-8 py-4">
-            <p>Built with React, TypeScript, and Tailwind CSS.</p>
+            <p>Built exclusively for scoremilk.com</p>
           </footer>
         </div>
       </div>

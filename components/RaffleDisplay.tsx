@@ -1,9 +1,9 @@
-
 import React, { useEffect, useState } from 'react';
 import Wheel from './Wheel';
 
 interface RaffleDisplayProps {
   participants: string[];
+  originalParticipants: string[];
   winner: string | null;
   isSpinning: boolean;
   onSpin: () => void;
@@ -21,6 +21,7 @@ interface RaffleDisplayProps {
 
 const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
   participants,
+  originalParticipants,
   winner,
   isSpinning,
   onSpin,
@@ -37,6 +38,7 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
 }) => {
   const [flicking, setFlicking] = useState(false);
   const [showRemoveWinnerConfirm, setShowRemoveWinnerConfirm] = useState<boolean>(false);
+  const [isTitleBlinking, setIsTitleBlinking] = useState<boolean>(false);
 
   useEffect(() => {
     if (tickCount > 0 && isSpinning) {
@@ -47,6 +49,19 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
   }, [tickCount, isSpinning]);
 
   const canSpin = participants.length >= 2 && !isSpinning;
+
+  const handleSpinClick = () => {
+    const MIN_TITLE_LENGTH = 5;
+    // This button is only clickable when `canSpin` is true.
+    if (raffleTitle.trim().length < MIN_TITLE_LENGTH) {
+        // If the title is the only thing missing, trigger the blink effect.
+        setIsTitleBlinking(true);
+        setTimeout(() => setIsTitleBlinking(false), 600); // Reset after animation
+    } else {
+        // All conditions are met, proceed with the spin.
+        onSpin();
+    }
+  };
 
   const renderWinnerOverlay = () => {
     if (!winner) return null;
@@ -113,6 +128,7 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
             
               <Wheel 
                 participants={participants}
+                originalParticipants={originalParticipants}
                 rotation={rotation}
               />
             </>
@@ -122,7 +138,7 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
         </div>
 
         <div className="flex flex-col items-center w-full" style={{ visibility: winner ? 'hidden' : 'visible' }}>
-          <div className="w-full max-w-md mb-4">
+          <div className={`w-full max-w-md mb-4 rounded-md transition-shadow duration-300 ${isTitleBlinking ? 'is-blinking' : ''}`}>
             <input
               type="text"
               value={raffleTitle}
@@ -143,9 +159,11 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
             </button>
           ) : (
             <button
-              onClick={onSpin}
+              onClick={handleSpinClick}
               disabled={!canSpin}
-              className="py-4 px-10 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white text-2xl font-bold rounded-full shadow-lg transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none hover:scale-105 disabled:hover:scale-100"
+              className={`py-4 px-10 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-2xl font-bold rounded-full shadow-lg transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:hover:scale-100 ${
+                raffleTitle.trim().length < 5 && canSpin ? 'opacity-50 cursor-not-allowed' : 'hover:from-purple-600 hover:to-indigo-700 hover:scale-105'
+              }`}
             >
               SPIN!
             </button>

@@ -2,10 +2,11 @@ import React, { useMemo } from 'react';
 
 interface WheelProps {
   participants: string[];
+  originalParticipants: string[];
   rotation: number;
 }
 
-const Wheel: React.FC<WheelProps> = ({ participants, rotation }) => {
+const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipants }) => {
   const numParticipants = participants.length;
   
   if (numParticipants === 0) return null;
@@ -57,6 +58,10 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation }) => {
     };
 
     return participants.map((participant, index) => {
+      // Find the participant's original index to get a stable color
+      const originalIndex = originalParticipants.findIndex(p => p === participant);
+      const colorIndex = originalIndex !== -1 ? originalIndex : index; // Use original index for color
+
       const startAngle = segmentAngle * index;
       const endAngle = startAngle + segmentAngle;
 
@@ -78,7 +83,7 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation }) => {
       const textRadius = radius * 0.55; // Position text in the middle of the segment radius
       const textPos = { x: center + Math.cos(textAngleRad) * textRadius, y: center + Math.sin(textAngleRad) * textRadius };
       
-      const fillColor = getColorForIndex(index);
+      const fillColor = getColorForIndex(colorIndex); // Use the stable index for color
 
       const separatorAngleRad = (endAngle - 90) * Math.PI / 180;
       const separatorEnd = {
@@ -134,23 +139,19 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation }) => {
         </g>
       );
     });
-  }, [participants, segmentAngle, numParticipants, randomStartHue]);
+  }, [participants, segmentAngle, numParticipants, randomStartHue, originalParticipants]);
 
   // Memoize the lights to prevent re-calculating random animation delays on every frame.
   // This ensures the blinking animation remains consistent while the wheel is spinning.
   const lights = useMemo(() => {
     const lightElements = [];
     const numLights = 36;
-    const animationDuration = 3.0; // Matches the CSS animation duration
+    const animationDuration = 4.0; // Matches the title CSS animation duration
 
+    // Sequential delays to create a wave effect
     const delays = Array.from({ length: numLights }, (_, i) => 
         (i / numLights) * animationDuration
     );
-
-    for (let i = delays.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [delays[i], delays[j]] = [delays[j], delays[i]];
-    }
 
     const lightSegmentAngle = 360 / numLights;
     for (let i = 0; i < numLights; i++) {
@@ -159,16 +160,13 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation }) => {
         const lightRadius = 480;
         const lightPos = { x: center + Math.cos(lightAngleRad) * lightRadius, y: center + Math.sin(lightAngleRad) * lightRadius };
         
-        // Alternate between the two animation patterns
-        const className = i % 2 === 0 ? 'breathing-light-A' : 'breathing-light-B';
-        
         lightElements.push(
             <circle 
                 key={`light-${i}`} 
                 cx={lightPos.x} 
                 cy={lightPos.y} 
                 r="14" 
-                className={className}
+                className="wave-light-ball"
                 style={{ animationDelay: `${delays[i]}s` }}
             />
         );
@@ -192,8 +190,8 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation }) => {
   return (
     <svg viewBox="0 0 1000 1000" className="w-full h-full">
       <g>
-        <circle cx="500" cy="500" r="500" fill="#1f2937" />
-        <circle cx="500" cy="500" r="496" fill="#374151" />
+        <circle cx="500" cy="500" r="500" fill="#35200d" />
+        <circle cx="500" cy="500" r="496" fill="#40260f" />
         {lights}
       </g>
       
@@ -206,19 +204,30 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation }) => {
         <g clipPath="url(#circle-clip)">
           {segments}
         </g>
+        <circle cx="500" cy="500" r="420" fill="none" stroke="#0b0f1c" strokeWidth="2" />
         {pegs}
       </g>
       
       <g>
-          <circle cx="500" cy="500" r="40" fill="#374151" />
-          <circle cx="500" cy="500" r="35" fill="#4b5563" />
-          <circle cx="500" cy="500" r="10" fill="#1f2937" />
+          <circle cx="500" cy="500" r="40" fill="#40260f" />
+          <circle cx="500" cy="500" r="35" fill="#3e2711" />
+          <circle cx="500" cy="500" r="10" fill="url(#metallic-center-gradient)" />
       </g>
 
       <defs>
         <radialGradient id="metallic-peg-gradient" cx="0.35" cy="0.35" r="0.65">
             <stop offset="0%" style={{stopColor: '#f1f5f9'}} />
             <stop offset="100%" style={{stopColor: '#94a3b8'}} />
+        </radialGradient>
+        <radialGradient id="metallic-center-gradient" cx="0.35" cy="0.35" r="0.65">
+            <stop offset="0%" style={{stopColor: '#f8fafc'}} />
+            <stop offset="50%" style={{stopColor: '#94a3b8'}} />
+            <stop offset="100%" style={{stopColor: '#475569'}} />
+        </radialGradient>
+        <radialGradient id="glass-bulb-gradient" cx="0.4" cy="0.4" r="0.6">
+            <stop offset="0%" style={{stopColor: 'rgba(255, 255, 255, 0.4)'}} />
+            <stop offset="40%" style={{stopColor: 'rgba(255, 255, 255, 0.1)'}} />
+            <stop offset="100%" style={{stopColor: 'rgba(255, 255, 255, 0.05)'}} />
         </radialGradient>
         <clipPath id="circle-clip">
           <circle cx="500" cy="500" r="420" />
