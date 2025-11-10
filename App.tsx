@@ -38,7 +38,17 @@ const App: React.FC = () => {
   const [raffleError, setRaffleError] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-  const [isScaledMode, setIsScaledMode] = useState<boolean>(true);
+  const [isScaledMode, setIsScaledMode] = useState<boolean>(() => {
+    try {
+      const savedMode = localStorage.getItem('isScaledMode');
+      // If a value is found, parse it to boolean. Otherwise, default to true.
+      return savedMode !== null ? JSON.parse(savedMode) : true;
+    } catch (error) {
+      console.error("Error parsing screen mode from localStorage", error);
+      // Default to true in case of any error.
+      return true;
+    }
+  });
   
   const appContainerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<{
@@ -101,6 +111,15 @@ const App: React.FC = () => {
       console.error("Error saving winner history to localStorage", error);
     }
   }, [winnerHistory]);
+
+  // Save screen mode preference to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('isScaledMode', JSON.stringify(isScaledMode));
+    } catch (error) {
+      console.error("Error saving screen mode to localStorage", error);
+    }
+  }, [isScaledMode]);
   
   // Effect to handle volume changes when isMuted state changes
   useEffect(() => {
