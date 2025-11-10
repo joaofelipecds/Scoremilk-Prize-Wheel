@@ -25,7 +25,6 @@ const App: React.FC = () => {
   const [rotation, setRotation] = useState<number>(0);
   const [preSpinRotation, setPreSpinRotation] = useState<number>(0);
   const [tickCount, setTickCount] = useState<number>(0);
-  const [raffleTitle, setRaffleTitle] = useState<string>('');
   const [winnerHistory, setWinnerHistory] = useState<{ winnerName: string; raffleTitle: string; timestamp: number }[]>(() => {
     try {
       const savedHistory = localStorage.getItem('winnerHistory');
@@ -35,7 +34,6 @@ const App: React.FC = () => {
       return [];
     }
   });
-  const [raffleError, setRaffleError] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isScaledMode, setIsScaledMode] = useState<boolean>(() => {
@@ -73,7 +71,6 @@ const App: React.FC = () => {
   });
   const masterGainRef = useRef<GainNode | null>(null);
   const animationFrameId = useRef<number | null>(null);
-  const inactivityTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     // Keep the wheel participants in sync with the master list
@@ -85,9 +82,6 @@ const App: React.FC = () => {
     return () => {
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
-      }
-      if (inactivityTimerRef.current) {
-        clearTimeout(inactivityTimerRef.current);
       }
       if (audioRef.current.context && audioRef.current.context.state !== 'closed') {
         if (audioRef.current.backgroundMusic?.sources) {
@@ -170,28 +164,6 @@ const App: React.FC = () => {
       window.removeEventListener('resize', scaleApp);
     };
   }, [isScaledMode]);
-
-  // Inactivity timer logic
-  const resetInactivityTimer = useCallback(() => {
-    if (inactivityTimerRef.current) {
-        clearTimeout(inactivityTimerRef.current);
-    }
-    inactivityTimerRef.current = window.setTimeout(() => {
-        setRaffleTitle('');
-    }, 5 * 60 * 1000); // 5 minutes
-  }, []);
-
-  useEffect(() => {
-    if (isSpinning) {
-      // If spinning starts, clear the timer
-      if (inactivityTimerRef.current) {
-          clearTimeout(inactivityTimerRef.current);
-      }
-    } else {
-      // When not spinning (either on load or after a spin), reset the timer
-      resetInactivityTimer();
-    }
-  }, [isSpinning, resetInactivityTimer]);
 
   const initializeBackgroundMusic = useCallback(() => {
     if (audioRef.current.backgroundMusic) return; // Already initialized
@@ -478,15 +450,9 @@ const App: React.FC = () => {
   }, []);
 
   const handleSpin = useCallback(() => {
-    if (!raffleTitle.trim()) {
-      setRaffleError("Raffle name is required");
-      return;
-    }
-
     if (wheelParticipants.length < 2 || isSpinning) return;
 
     setPreSpinRotation(rotation);
-    setRaffleError(null);
 
     if (!audioRef.current.context) {
       try {
@@ -774,7 +740,7 @@ const App: React.FC = () => {
 
             const newWinnerEntry = {
               winnerName: finalWinner,
-              raffleTitle: raffleTitle.trim() || 'General Raffle',
+              raffleTitle: 'Prize Wheel Raffle',
               timestamp: Date.now(),
             };
             setWinnerHistory(prev => [...prev, newWinnerEntry]);
@@ -803,7 +769,7 @@ const App: React.FC = () => {
 
     animationFrameId.current = requestAnimationFrame(spin);
 
-  }, [wheelParticipants, isSpinning, rotation, raffleTitle]);
+  }, [wheelParticipants, isSpinning, rotation]);
 
   const animateWheelToStart = useCallback((onComplete?: () => void) => {
     if (animationFrameId.current) {
@@ -877,14 +843,6 @@ const App: React.FC = () => {
     
     resetRaffle();
   }, [resetRaffle]);
-
-  const handleRaffleTitleChange = (newTitle: string) => {
-    setRaffleTitle(newTitle);
-    if (raffleError) {
-      setRaffleError(null);
-    }
-    resetInactivityTimer();
-  };
 
   const clearAll = useCallback(() => {
     // --- Audio Logic ---
@@ -969,6 +927,10 @@ const App: React.FC = () => {
     : 'w-full h-full';
 
   const containerStyle = isScaledMode ? { width: '1920px', height: '1080px' } : {};
+  
+  const contentWrapperClass = isScaledMode 
+    ? "p-4 sm:p-6 lg:p-8 flex flex-col flex-grow h-full overflow-y-auto"
+    : "p-4 sm:p-6 lg:p-8 flex flex-col w-full h-full overflow-hidden";
 
   const mainTitle = "SCOREMILK PRIZE WHEEL";
 
@@ -981,8 +943,8 @@ const App: React.FC = () => {
         className={`bg-gray-900 text-gray-100 font-sans flex flex-col ${containerClasses}`}
         style={containerStyle}
       >
-        <div className="p-4 sm:p-6 lg:p-8 flex flex-col flex-grow h-full overflow-y-auto">
-          <header className="flex justify-center items-center mb-8 gap-6">
+        <div className={contentWrapperClass}>
+          <header className="flex-shrink-0 flex justify-center items-center mb-8 gap-6">
             <img src={logoUrl} alt="Scoremilk Logo" className="w-20 h-20" />
             <div className="text-left">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold">
@@ -1002,8 +964,8 @@ const App: React.FC = () => {
           
           {winner && <Confetti />}
 
-          <main className="flex-grow grid grid-cols-1 lg:grid-cols-3 lg:items-start gap-8 max-w-7xl w-full mx-auto">
-            <div className="lg:col-span-1 bg-gray-950/50 rounded-xl p-6 shadow-lg flex flex-col h-full">
+          <main className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 lg:items-start gap-8 max-w-7xl w-full mx-auto">
+            <div className="lg:col-span-1 bg-gray-950/50 rounded-xl p-6 shadow-lg flex flex-col min-h-0 h-full">
               <ParticipantInput 
                 onAddParticipant={addParticipant} 
                 onAddMultipleParticipants={addMultipleParticipants}
@@ -1014,7 +976,7 @@ const App: React.FC = () => {
                 isFullscreen={isFullscreen}
                 onToggleFullScreen={toggleFullScreen}
               />
-              <div className="mt-4 border-t border-gray-700 pt-4 flex-grow">
+              <div className="mt-4 border-t border-gray-700 pt-4 flex-grow min-h-0">
                 <ParticipantList
                   participants={participants}
                   onRemoveParticipant={removeParticipant}
@@ -1024,7 +986,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div className="lg:col-span-2 bg-gray-950/50 rounded-xl shadow-lg flex items-center justify-center p-6 min-h-[400px] lg:h-auto">
+            <div className="lg:col-span-2 bg-gray-950/50 rounded-xl shadow-lg flex items-center justify-center p-6 min-h-0 h-full">
               <RaffleDisplay
                 participants={wheelParticipants}
                 originalParticipants={participants}
@@ -1037,15 +999,11 @@ const App: React.FC = () => {
                 onShuffle={shuffleWheel}
                 rotation={rotation}
                 tickCount={tickCount}
-                raffleTitle={raffleTitle}
-                onRaffleTitleChange={handleRaffleTitleChange}
-                raffleError={raffleError}
-                onClearRaffleError={() => setRaffleError(null)}
               />
             </div>
           </main>
 
-          <footer className="text-center text-gray-500 mt-8 py-4">
+          <footer className="flex-shrink-0 text-center text-gray-500 mt-8 py-4">
             <p>Built exclusively for scoremilk.com</p>
           </footer>
         </div>

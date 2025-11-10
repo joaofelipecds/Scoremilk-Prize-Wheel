@@ -224,10 +224,10 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipa
             <stop offset="50%" style={{stopColor: '#94a3b8'}} />
             <stop offset="100%" style={{stopColor: '#475569'}} />
         </radialGradient>
-        <radialGradient id="glass-bulb-gradient" cx="0.4" cy="0.4" r="0.6">
-            <stop offset="0%" style={{stopColor: 'rgba(255, 255, 255, 0.4)'}} />
-            <stop offset="40%" style={{stopColor: 'rgba(255, 255, 255, 0.1)'}} />
-            <stop offset="100%" style={{stopColor: 'rgba(255, 255, 255, 0.05)'}} />
+        <radialGradient id="glass-bulb-gradient" cx="0.35" cy="0.35" r="0.65">
+          <stop offset="0%" style={{ stopColor: 'rgba(255, 255, 255, 0.6)' }} />
+          <stop offset="30%" style={{ stopColor: 'rgba(200, 200, 220, 0.2)' }} />
+          <stop offset="100%" style={{ stopColor: 'rgba(150, 150, 180, 0.1)' }} />
         </radialGradient>
         <clipPath id="circle-clip">
           <circle cx="500" cy="500" r="420" />
