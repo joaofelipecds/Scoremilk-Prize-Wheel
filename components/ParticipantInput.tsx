@@ -1,14 +1,11 @@
-
 import React, { useState } from 'react';
-import { PlusIcon, ListIcon, TrophyIcon, MusicOnIcon, MusicOffIcon } from './icons';
+import { PlusIcon, ListIcon, TrophyIcon } from './icons';
 
 interface ParticipantInputProps {
   onAddParticipant: (name: string) => void;
   onAddMultipleParticipants: (names: string[]) => void;
   disabled: boolean;
   winnerHistory: { winnerName: string; raffleTitle: string; timestamp: number }[];
-  isMuted: boolean;
-  onToggleMute: () => void;
   onShuffle: () => void;
 }
 
@@ -17,8 +14,6 @@ const ParticipantInput: React.FC<ParticipantInputProps> = ({
   onAddMultipleParticipants,
   disabled,
   winnerHistory,
-  isMuted,
-  onToggleMute,
   onShuffle,
 }) => {
   const [name, setName] = useState('');
@@ -106,15 +101,6 @@ const ParticipantInput: React.FC<ParticipantInputProps> = ({
         >
           <TrophyIcon />
           <span>See Winners</span>
-        </button>
-        <button
-          type="button"
-          onClick={onToggleMute}
-          disabled={disabled}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold p-2 rounded-md flex items-center justify-center transition-colors duration-200 disabled:bg-emerald-800/50 disabled:cursor-not-allowed"
-          aria-label={isMuted ? 'Unmute background sound' : 'Mute background sound'}
-        >
-          {isMuted ? <MusicOffIcon /> : <MusicOnIcon />}
         </button>
         <button
           type="button"

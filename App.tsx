@@ -3,7 +3,7 @@ import ParticipantInput from './components/ParticipantInput';
 import ParticipantList from './components/ParticipantList';
 import RaffleDisplay from './components/RaffleDisplay';
 import Confetti from './components/Confetti';
-import { EnterFullScreenIcon } from './components/icons';
+import { EnterFullScreenIcon, ExitFullScreenIcon, MusicOffIcon, MusicOnIcon } from './components/icons';
 
 const logoUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGNsaXBQYXRoIGlkPSJsb2dvLWNsaXAiPjxwYXRoIGQ9Ik04NSAyNUgxNVYxNUMxNSAxMi4yMzg2IDE3LjIzODYgMTAgMjAgMTBIOEM4Mi43NjE0IDEwIDg1IDEyLjIzODYgODUgMTVWMjVaIi8+PHBhdGggZD0iTTE1IDI1TDUgNDBWOTBIOTVWNDBMODUgMjVIMTVaIi8+PC9jbGlwUGF0aD48L2RlZnM+PGcgY2xpcC1wYXRoPSJ1cmwoI2xvZ28tY2xpcCkiPjxnIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMyI+PHBhdGggZD0iTTIwIDAgTDAgMjAiLz48cGF0aCBkPSJNNDAgMCBMMCA0MCIvPjxwYXRoIGQ9Ik02MCAwIEwwIDYwIi8+PHBhdGggZD0iTTgwIDAgTDAgODAiLz48cGF0aCBkPSJNMTAwIDAgTDAgMTAwIi8+PHBhdGggZD0iTTEyMCAwIEwwIDEyMCIvPjxwYXRoIGQ9Ik0xNDAgMCBMMCAxNDAiLz48cGF0aCBkPSJNMTYwIDAgTDAgMTYwIi8+PHBhdGggZD0iTTE4MCAwIEwwIDE4MCIvPjwvZz48L2c+PHBhdGggZD0iTTg1IDI1SDE1VjE1QzE1IDEyLjIzODYgMTcuMjM4NiAxMCAyMCAxMEg4MEM4Mi43NjE0IDEwIDg1IDEyLjIzODYgODUgMTVWMjVaIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTUgMjVMNSA0MFY5MEg5NVY0MEw4NSAyNUgxNVoiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==';
 
@@ -912,6 +912,29 @@ const App: React.FC = () => {
 
   return (
     <div className="w-screen h-screen bg-black flex flex-col overflow-hidden">
+      <div className="fixed top-4 left-4 z-50 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={toggleMute}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold p-3 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:scale-110"
+          aria-label={isMuted ? 'Unmute background sound' : 'Mute background sound'}
+          title={isMuted ? 'Unmute' : 'Mute'}
+        >
+          {isMuted ? <MusicOffIcon /> : <MusicOnIcon />}
+        </button>
+        <button
+          type="button"
+          onClick={toggleFullScreen}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:scale-110"
+          aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
+          title={isFullscreen ? 'Exit Full Screen' : 'Enter Full Screen'}
+        >
+          {isFullscreen ? <ExitFullScreenIcon /> : <EnterFullScreenIcon />}
+          <span>{isFullscreen ? 'Exit' : 'Full Screen'}</span>
+        </button>
+      </div>
+
+
       {showFullscreenPrompt && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] p-4 backdrop-blur-sm" onClick={handleDismissFullscreenPrompt}>
           <div className="bg-gray-950 p-8 rounded-lg shadow-xl w-full max-w-lg text-center animate-fade-in" onClick={(e) => e.stopPropagation()}>
@@ -967,8 +990,6 @@ const App: React.FC = () => {
                 onAddMultipleParticipants={addMultipleParticipants}
                 disabled={isSpinning} 
                 winnerHistory={winnerHistory}
-                isMuted={isMuted}
-                onToggleMute={toggleMute}
                 onShuffle={shuffleWheel}
               />
               <div className="mt-4 border-t border-gray-700 pt-4 flex-grow min-h-0">
