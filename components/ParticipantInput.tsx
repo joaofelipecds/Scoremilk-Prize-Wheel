@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { PlusIcon, ListIcon, TrophyIcon, MusicOnIcon, MusicOffIcon, ShuffleIcon } from './icons';
+import { PlusIcon, ListIcon, TrophyIcon, MusicOnIcon, MusicOffIcon } from './icons';
 
 interface ParticipantInputProps {
   onAddParticipant: (name: string) => void;
@@ -120,10 +120,10 @@ const ParticipantInput: React.FC<ParticipantInputProps> = ({
           type="button"
           onClick={onShuffle}
           disabled={disabled}
-          className="bg-pink-400 hover:bg-pink-500 text-white font-bold p-2 rounded-md flex items-center justify-center transition-colors duration-200 disabled:bg-pink-700/50 disabled:cursor-not-allowed"
+          className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-2 px-3 rounded-md flex items-center transition-colors duration-200 disabled:bg-pink-700/50 disabled:cursor-not-allowed"
           aria-label="Shuffle participants"
         >
-          <ShuffleIcon />
+          Shuffle
         </button>
       </form>
 

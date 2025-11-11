@@ -106,7 +106,7 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
           {participants.length >= 2 && (
             <>
               <div 
-                className={`absolute top-[-12%] left-1/2 -translate-x-1/2 z-10 w-[clamp(4rem,12vh,8rem)]`}
+                className={`absolute bottom-[93%] left-1/2 -translate-x-1/2 z-10 w-[clamp(4rem,12vh,8rem)]`}
                 style={{ transformOrigin: 'center 80%' }}
               >
                 <div className={flicking ? 'is-flicking' : ''}>

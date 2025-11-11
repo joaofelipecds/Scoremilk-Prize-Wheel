@@ -19,13 +19,6 @@ export const ListIcon: React.FC = () => (
     </svg>
 );
 
-export const ShuffleIcon: React.FC = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-        <path d="M10 4a1 1 0 011 1v1.382l1.753-1.402a1 1 0 111.23 1.57l-3.5 2.75a1 1 0 01-1.23 0l-3.5-2.75a1 1 0 111.23-1.57L9 6.382V5a1 1 0 011-1z" />
-        <path d="M4.08 11.182a1 1 0 011.23-.23l3.5 2.25a1 1 0 010 1.598l-3.5 2.25a1 1 0 11-1-1.732L7.382 14 4.08 11.914a1 1 0 01-.23-1.23zM15.92 11.182a1 1 0 00-1.23-.23L11.5 12.866 9.08 11.182a1 1 0 00-1.23 1.57l3.5 2.75a1 1 0 001.23 0l3.5-2.75a1 1 0 00-.23-1.23z" />
-    </svg>
-);
-
 export const TrophyIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
       <path d="M4 2h12v5a3 3 0 01-3 3H7a3 3 0 01-3-3V2z" />
