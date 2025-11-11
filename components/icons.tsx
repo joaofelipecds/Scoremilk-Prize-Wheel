@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 export const PlusIcon: React.FC = () => (
@@ -48,5 +47,11 @@ export const EnterFullScreenIcon: React.FC = () => (
 export const ExitFullScreenIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M2 6V2h4M18 6V2h-4M2 14v4h4M18 14v4h-4" />
+    </svg>
+);
+
+export const ShuffleIcon: React.FC = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M12.879 4.414a1 1 0 010 1.414L11.414 7H15a1 1 0 110 2H7a1 1 0 01-1-1V4a1 1 0 112 0v2.586l1.293-1.293a1 1 0 011.414 0zM7.121 15.586a1 1 0 010-1.414L8.586 13H5a1 1 0 110-2h8a1 1 0 011 1v4a1 1 0 11-2 0v-2.586l-1.293 1.293a1 1 0 01-1.414 0z" clipRule="evenodd" />
     </svg>
 );
