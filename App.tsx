@@ -1,10 +1,10 @@
-
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import ParticipantInput from './components/ParticipantInput';
 import ParticipantList from './components/ParticipantList';
 import RaffleDisplay from './components/RaffleDisplay';
 import Confetti from './components/Confetti';
 import ResolutionSwitcher from './components/ResolutionSwitcher';
+import { EnterFullScreenIcon } from './components/icons';
 
 const logoUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGNsaXBQYXRoIGlkPSJsb2dvLWNsaXAiPjxwYXRoIGQ9Ik04NSAyNUgxNVYxNUMxNSAxMi4yMzg2IDE3LjIzODYgMTAgMjAgMTBIOEM4Mi43NjE0IDEwIDg1IDEyLjIzODYgODUgMTVWMjVaIi8+PHBhdGggZD0iTTE1IDI1TDUgNDBWOTBIOTVWNDBMODUgMjVIMTVaIi8+PC9jbGlwUGF0aD48L2RlZnM+PGcgY2xpcC1wYXRoPSJ1cmwoI2xvZ28tY2xpcCkiPjxnIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMyI+PHBhdGggZD0iTTIwIDAgTDAgMjAiLz48cGF0aCBkPSJNNDAgMCBMMCA0MCIvPjxwYXRoIGQ9Ik02MCAwIEwwIDYwIi8+PHBhdGggZD0iTTgwIDAgTDAgODAiLz48cGF0aCBkPSJNMTAwIDAgTDAgMTAwIi8+PHBhdGggZD0iTTEyMCAwIEwwIDEyMCIvPjxwYXRoIGQ9Ik0xNDAgMCBMMCAxNDAiLz48cGF0aCBkPSJNMTYwIDAgTDAgMTYwIi8+PHBhdGggZD0iTTE4MCAwIEwwIDE4MCIvPjwvZz48L2c+PHBhdGggZD0iTTg1IDI1SDE1VjE1QzE1IDEyLjIzODYgMTcuMjM4NiAxMCAyMCAxMEg4MEM4Mi43NjE0IDEwIDg1IDEyLjIzODYgODUgMTVWMjVaIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTUgMjVMNSA0MFY5MEg5NVY0MEw4NSAyNUgxNVoiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==';
 
@@ -35,7 +35,8 @@ const App: React.FC = () => {
     }
   });
   const [isMuted, setIsMuted] = useState<boolean>(true);
-  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(!!document.fullscreenElement);
+  const [showFullscreenPrompt, setShowFullscreenPrompt] = useState<boolean>(false);
   const [isScaledMode, setIsScaledMode] = useState<boolean>(() => {
     try {
       const savedMode = localStorage.getItem('isScaledMode');
@@ -134,6 +135,27 @@ const App: React.FC = () => {
     return () => {
       document.removeEventListener('fullscreenchange', handleFullScreenChange);
     };
+  }, []);
+
+  // Effect to show fullscreen prompt on first visit
+  useEffect(() => {
+    try {
+      const hasSeenPrompt = localStorage.getItem('hasSeenFullscreenPrompt');
+      if (!hasSeenPrompt) {
+        // Use a small delay to not be too intrusive right away.
+        const timer = setTimeout(() => {
+          setShowFullscreenPrompt(true);
+        }, 500);
+        return () => clearTimeout(timer);
+      }
+    } catch (error) {
+      console.error("Error accessing localStorage for fullscreen prompt", error);
+      // Fallback to show the prompt if localStorage is unavailable
+      const timer = setTimeout(() => {
+        setShowFullscreenPrompt(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   // Effect for scaling the app content to fit the viewport or fitting to screen
@@ -315,6 +337,25 @@ const App: React.FC = () => {
       if (document.exitFullscreen) {
         document.exitFullscreen();
       }
+    }
+  }, []);
+
+  const handleEnterFullscreenFromPrompt = useCallback(() => {
+    toggleFullScreen();
+    setShowFullscreenPrompt(false);
+    try {
+      localStorage.setItem('hasSeenFullscreenPrompt', 'true');
+    } catch (error) {
+      console.error("Error saving fullscreen prompt status to localStorage", error);
+    }
+  }, [toggleFullScreen]);
+
+  const handleDismissFullscreenPrompt = useCallback(() => {
+    setShowFullscreenPrompt(false);
+    try {
+      localStorage.setItem('hasSeenFullscreenPrompt', 'true');
+    } catch (error) {
+      console.error("Error saving fullscreen prompt status to localStorage", error);
     }
   }, []);
 
@@ -930,13 +971,44 @@ const App: React.FC = () => {
   
   const contentWrapperClass = isScaledMode 
     ? "p-4 sm:p-6 lg:p-8 flex flex-col flex-grow h-full overflow-y-auto"
-    : "p-4 sm:p-6 lg:p-8 flex flex-col w-full h-full overflow-hidden";
+    : "p-4 sm:p-6 lg:p-4 flex flex-col w-full h-full overflow-hidden";
 
   const mainTitle = "SCOREMILK PRIZE WHEEL";
 
   return (
     <div className="w-screen h-screen bg-black flex items-center justify-center overflow-hidden">
-      <ResolutionSwitcher isScaled={isScaledMode} onToggle={toggleScreenMode} />
+      <ResolutionSwitcher 
+        isScaled={isScaledMode} 
+        onToggle={toggleScreenMode} 
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={toggleFullScreen}
+      />
+
+      {showFullscreenPrompt && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] p-4 backdrop-blur-sm" onClick={handleDismissFullscreenPrompt}>
+          <div className="bg-gray-950 p-8 rounded-lg shadow-xl w-full max-w-lg text-center animate-fade-in" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-2xl font-bold mb-4 text-gray-100">Welcome to the Prize Wheel!</h2>
+            <p className="text-gray-400 mb-6 text-lg">
+              For the best experience and proper functionality, we recommend entering Full Screen Mode.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <button
+                onClick={handleEnterFullscreenFromPrompt}
+                className="py-3 px-6 bg-indigo-600 hover:bg-indigo-700 rounded-md text-white font-semibold transition-transform duration-200 hover:scale-105 flex items-center justify-center gap-2"
+              >
+                <EnterFullScreenIcon />
+                <span>Enter Full Screen</span>
+              </button>
+              <button
+                onClick={handleDismissFullscreenPrompt}
+                className="py-3 px-6 bg-gray-600 hover:bg-gray-700 rounded-md text-white font-semibold transition-colors"
+              >
+                Maybe Later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       <div 
         ref={appContainerRef}
@@ -944,7 +1016,7 @@ const App: React.FC = () => {
         style={containerStyle}
       >
         <div className={contentWrapperClass}>
-          <header className="flex-shrink-0 flex justify-center items-center mb-8 gap-6">
+          <header className="flex-shrink-0 flex justify-center items-center mb-4 gap-6">
             <img src={logoUrl} alt="Scoremilk Logo" className="w-20 h-20" />
             <div className="text-left">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold">
@@ -964,7 +1036,7 @@ const App: React.FC = () => {
           
           {winner && <Confetti />}
 
-          <main className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 lg:items-start gap-8 max-w-7xl w-full mx-auto">
+          <main className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 lg:items-start gap-4 max-w-7xl w-full mx-auto">
             <div className="lg:col-span-1 bg-gray-950/50 rounded-xl p-6 shadow-lg flex flex-col min-h-0 h-full">
               <ParticipantInput 
                 onAddParticipant={addParticipant} 
@@ -998,11 +1070,12 @@ const App: React.FC = () => {
                 rotation={rotation}
                 tickCount={tickCount}
                 isScaledMode={isScaledMode}
+                isFullscreen={isFullscreen}
               />
             </div>
           </main>
 
-          <footer className="flex-shrink-0 text-center text-gray-500 mt-8 py-4">
+          <footer className="flex-shrink-0 text-center text-gray-500 mt-4 py-2">
             <p>Built exclusively for scoremilk.com</p>
           </footer>
         </div>

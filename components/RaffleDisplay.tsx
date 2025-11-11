@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import Wheel from './Wheel';
 
@@ -14,6 +13,7 @@ interface RaffleDisplayProps {
   rotation: number;
   tickCount: number;
   isScaledMode: boolean;
+  isFullscreen: boolean;
 }
 
 const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
@@ -28,6 +28,7 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
   rotation,
   tickCount,
   isScaledMode,
+  isFullscreen,
 }) => {
   const [flicking, setFlicking] = useState(false);
   const [showRemoveWinnerConfirm, setShowRemoveWinnerConfirm] = useState<boolean>(false);
@@ -99,8 +100,12 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
 
   const pointerClasses = isScaledMode
     ? 'w-32 h-40' // Use fixed rem sizes for scaled mode
-    : 'w-[clamp(60px,6.6vw,128px)] h-[clamp(75px,8.3vw,160px)]'; // Use responsive vw/clamp for fit-to-screen mode
+    : 'w-[clamp(60px,5.5vw,110px)] h-[clamp(75px,7vw,140px)]'; // Use responsive vw/clamp for fit-to-screen mode
 
+  const pointerStyle: React.CSSProperties = { transformOrigin: 'center 80%' };
+  if (!isScaledMode && isFullscreen) {
+    pointerStyle.top = 'calc(-12% + 15px)';
+  }
 
   return (
     <>
@@ -113,7 +118,7 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
             <>
               <div 
                 className={`absolute top-[-12%] left-1/2 -translate-x-1/2 z-10 ${pointerClasses}`}
-                style={{ transformOrigin: 'center 80%'}}
+                style={pointerStyle}
               >
                 <div className={flicking ? 'is-flicking' : ''}>
                   <svg viewBox="0 0 70 85" className="drop-shadow-lg">
