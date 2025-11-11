@@ -3,7 +3,6 @@ import ParticipantInput from './components/ParticipantInput';
 import ParticipantList from './components/ParticipantList';
 import RaffleDisplay from './components/RaffleDisplay';
 import Confetti from './components/Confetti';
-import ResolutionSwitcher from './components/ResolutionSwitcher';
 import { EnterFullScreenIcon } from './components/icons';
 
 const logoUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGNsaXBQYXRoIGlkPSJsb2dvLWNsaXAiPjxwYXRoIGQ9Ik04NSAyNUgxNVYxNUMxNSAxMi4yMzg2IDE3LjIzODYgMTAgMjAgMTBIOEM4Mi43NjE0IDEwIDg1IDEyLjIzODYgODUgMTVWMjVaIi8+PHBhdGggZD0iTTE1IDI1TDUgNDBWOTBIOTVWNDBMODUgMjVIMTVaIi8+PC9jbGlwUGF0aD48L2RlZnM+PGcgY2xpcC1wYXRoPSJ1cmwoI2xvZ28tY2xpcCkiPjxnIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMyI+PHBhdGggZD0iTTIwIDAgTDAgMjAiLz48cGF0aCBkPSJNNDAgMCBMMCA0MCIvPjxwYXRoIGQ9Ik02MCAwIEwwIDYwIi8+PHBhdGggZD0iTTgwIDAgTDAgODAiLz48cGF0aCBkPSJNMTAwIDAgTDAgMTAwIi8+PHBhdGggZD0iTTEyMCAwIEwwIDEyMCIvPjxwYXRoIGQ9Ik0xNDAgMCBMMCAxNDAiLz48cGF0aCBkPSJNMTYwIDAgTDAgMTYwIi8+PHBhdGggZD0iTTE4MCAwIEwwIDE4MCIvPjwvZz48L2c+PHBhdGggZD0iTTg1IDI1SDE1VjE1QzE1IDEyLjIzODYgMTcuMjM4NiAxMCAyMCAxMEg4MEM4Mi43NjE0IDEwIDg1IDEyLjIzODYgODUgMTVWMjVaIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTUgMjVMNSA0MFY5MEg5NVY0MEw4NSAyNUgxNVoiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==';
@@ -37,19 +36,7 @@ const App: React.FC = () => {
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(!!document.fullscreenElement);
   const [showFullscreenPrompt, setShowFullscreenPrompt] = useState<boolean>(false);
-  const [isScaledMode, setIsScaledMode] = useState<boolean>(() => {
-    try {
-      const savedMode = localStorage.getItem('isScaledMode');
-      // If a value is found, parse it to boolean. Otherwise, default to true.
-      return savedMode !== null ? JSON.parse(savedMode) : true;
-    } catch (error) {
-      console.error("Error parsing screen mode from localStorage", error);
-      // Default to true in case of any error.
-      return true;
-    }
-  });
   
-  const appContainerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<{
     context: AudioContext | null;
     tickSound: (() => void) | null;
@@ -107,15 +94,6 @@ const App: React.FC = () => {
     }
   }, [winnerHistory]);
 
-  // Save screen mode preference to localStorage whenever it changes
-  useEffect(() => {
-    try {
-      localStorage.setItem('isScaledMode', JSON.stringify(isScaledMode));
-    } catch (error) {
-      console.error("Error saving screen mode to localStorage", error);
-    }
-  }, [isScaledMode]);
-  
   // Effect to handle volume changes when isMuted state changes
   useEffect(() => {
     if (masterGainRef.current && audioRef.current.context) {
@@ -157,35 +135,6 @@ const App: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, []);
-
-  // Effect for scaling the app content to fit the viewport or fitting to screen
-  useEffect(() => {
-    const scaleApp = () => {
-      if (!appContainerRef.current) return;
-      
-      if (isScaledMode) {
-        const targetWidth = 1920;
-        const targetHeight = 1080;
-        
-        const { clientWidth: windowWidth, clientHeight: windowHeight } = document.documentElement;
-        
-        const scaleX = windowWidth / targetWidth;
-        const scaleY = windowHeight / targetHeight;
-        const scale = Math.min(scaleX, scaleY);
-        
-        appContainerRef.current.style.transform = `scale(${scale})`;
-      } else {
-        appContainerRef.current.style.transform = 'none';
-      }
-    };
-
-    scaleApp();
-    window.addEventListener('resize', scaleApp);
-
-    return () => {
-      window.removeEventListener('resize', scaleApp);
-    };
-  }, [isScaledMode]);
 
   const initializeBackgroundMusic = useCallback(() => {
     if (audioRef.current.backgroundMusic) return; // Already initialized
@@ -959,31 +908,10 @@ const App: React.FC = () => {
     setWinner(null);
   }, []);
 
-  const toggleScreenMode = useCallback(() => {
-    setIsScaledMode(prev => !prev);
-  }, []);
-
-  const containerClasses = isScaledMode
-    ? 'origin-center transition-transform duration-300'
-    : 'w-full h-full';
-
-  const containerStyle = isScaledMode ? { width: '1920px', height: '1080px' } : {};
-  
-  const contentWrapperClass = isScaledMode 
-    ? "p-4 sm:p-6 lg:p-8 flex flex-col flex-grow h-full overflow-y-auto"
-    : "p-4 sm:p-6 lg:p-4 flex flex-col w-full h-full overflow-hidden";
-
   const mainTitle = "SCOREMILK PRIZE WHEEL";
 
   return (
-    <div className="w-screen h-screen bg-black flex items-center justify-center overflow-hidden">
-      <ResolutionSwitcher 
-        isScaled={isScaledMode} 
-        onToggle={toggleScreenMode} 
-        isFullscreen={isFullscreen}
-        onToggleFullscreen={toggleFullScreen}
-      />
-
+    <div className="w-screen h-screen bg-black flex flex-col overflow-hidden">
       {showFullscreenPrompt && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] p-4 backdrop-blur-sm" onClick={handleDismissFullscreenPrompt}>
           <div className="bg-gray-950 p-8 rounded-lg shadow-xl w-full max-w-lg text-center animate-fade-in" onClick={(e) => e.stopPropagation()}>
@@ -1010,12 +938,8 @@ const App: React.FC = () => {
         </div>
       )}
       
-      <div 
-        ref={appContainerRef}
-        className={`bg-gray-900 text-gray-100 font-sans flex flex-col ${containerClasses}`}
-        style={containerStyle}
-      >
-        <div className={contentWrapperClass}>
+      <div className="bg-gray-900 text-gray-100 font-sans flex flex-col w-full h-full">
+        <div className="p-4 sm:p-6 lg:p-8 flex flex-col flex-grow h-full overflow-hidden">
           <header className="flex-shrink-0 flex justify-center items-center mb-4 gap-6">
             <img src={logoUrl} alt="Scoremilk Logo" className="w-20 h-20" />
             <div className="text-left">
@@ -1036,8 +960,8 @@ const App: React.FC = () => {
           
           {winner && <Confetti />}
 
-          <main className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 lg:items-start gap-4 max-w-7xl w-full mx-auto">
-            <div className="lg:col-span-1 bg-gray-950/50 rounded-xl p-6 shadow-lg flex flex-col min-h-0 h-full">
+          <main className="flex-1 min-h-0 flex flex-col xl:flex-row gap-4 max-w-full w-full mx-auto">
+            <div className="h-2/5 xl:h-auto xl:w-1/3 xl:max-w-md bg-gray-950/50 rounded-xl p-6 shadow-lg flex flex-col min-h-0">
               <ParticipantInput 
                 onAddParticipant={addParticipant} 
                 onAddMultipleParticipants={addMultipleParticipants}
@@ -1057,7 +981,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div className="lg:col-span-2 bg-gray-950/50 rounded-xl shadow-lg flex items-center justify-center p-6 min-h-0 h-full">
+            <div className="flex-1 bg-gray-950/50 rounded-xl shadow-lg flex items-center justify-center p-2 sm:p-4 md:p-6 min-h-0">
               <RaffleDisplay
                 participants={wheelParticipants}
                 originalParticipants={participants}
@@ -1069,7 +993,6 @@ const App: React.FC = () => {
                 onRemoveWinnerEntries={removeWinnerEntries}
                 rotation={rotation}
                 tickCount={tickCount}
-                isScaledMode={isScaledMode}
                 isFullscreen={isFullscreen}
               />
             </div>

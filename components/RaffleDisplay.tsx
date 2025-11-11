@@ -12,7 +12,6 @@ interface RaffleDisplayProps {
   onRemoveWinnerEntries: (name: string | null) => void;
   rotation: number;
   tickCount: number;
-  isScaledMode: boolean;
   isFullscreen: boolean;
 }
 
@@ -27,7 +26,6 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
   onRemoveWinnerEntries,
   rotation,
   tickCount,
-  isScaledMode,
   isFullscreen,
 }) => {
   const [flicking, setFlicking] = useState(false);
@@ -98,30 +96,21 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
      );
   };
 
-  const pointerClasses = isScaledMode
-    ? 'w-32 h-40' // Use fixed rem sizes for scaled mode
-    : 'w-[clamp(60px,5.5vw,110px)] h-[clamp(75px,7vw,140px)]'; // Use responsive vw/clamp for fit-to-screen mode
-
-  const pointerStyle: React.CSSProperties = { transformOrigin: 'center 80%' };
-  if (!isScaledMode && isFullscreen) {
-    pointerStyle.top = 'calc(-12% + 15px)';
-  }
-
   return (
     <>
-      <div className="flex flex-col items-center justify-center gap-4 w-full h-full text-center">
-        <div 
-          className={`relative w-full max-h-full max-w-[1000px] aspect-square ${canSpin || isSpinning ? 'cursor-pointer' : ''}`}
-          onClick={handleWheelClick}
-        >
+      <div
+        className={`relative w-full h-full flex items-center justify-center ${canSpin || isSpinning ? 'cursor-pointer' : ''}`}
+        onClick={handleWheelClick}
+      >
+        <div className="relative w-auto h-full" style={{ aspectRatio: '1 / 1' }}>
           {participants.length >= 2 && (
             <>
               <div 
-                className={`absolute top-[-12%] left-1/2 -translate-x-1/2 z-10 ${pointerClasses}`}
-                style={pointerStyle}
+                className={`absolute top-[-12%] left-1/2 -translate-x-1/2 z-10 w-[clamp(4rem,12vh,8rem)]`}
+                style={{ transformOrigin: 'center 80%' }}
               >
                 <div className={flicking ? 'is-flicking' : ''}>
-                  <svg viewBox="0 0 70 85" className="drop-shadow-lg">
+                  <svg viewBox="0 0 70 85" className="drop-shadow-lg w-full h-full">
                       <defs>
                           <linearGradient id="pointer-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
                               <stop offset="0%" style={{stopColor: '#cbd5e1', stopOpacity: 1}} />
