@@ -100,7 +100,7 @@ const ParticipantInput: React.FC<ParticipantInputProps> = ({
           className="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-3 rounded-md flex items-center gap-2 transition-colors duration-200 disabled:bg-amber-700/50 disabled:cursor-not-allowed"
         >
           <TrophyIcon />
-          <span>See Winners</span>
+          <span>Winners</span>
         </button>
         <button
           type="button"
