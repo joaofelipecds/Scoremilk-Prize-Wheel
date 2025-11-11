@@ -88,7 +88,7 @@ const ParticipantInput: React.FC<ParticipantInputProps> = ({
           type="button"
           onClick={() => setIsModalOpen(true)}
           disabled={disabled}
-          className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-3 rounded-md flex items-center gap-2 transition-colors duration-200 disabled:bg-purple-800/50 disabled:cursor-not-allowed"
+          className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-[17.5px] rounded-md flex items-center gap-2 transition-colors duration-200 disabled:bg-purple-800/50 disabled:cursor-not-allowed"
         >
           <ListIcon />
           <span>Add List</span>
@@ -97,7 +97,7 @@ const ParticipantInput: React.FC<ParticipantInputProps> = ({
           type="button"
           onClick={() => setIsWinnersModalOpen(true)}
           disabled={disabled}
-          className="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-3 rounded-md flex items-center gap-2 transition-colors duration-200 disabled:bg-amber-700/50 disabled:cursor-not-allowed"
+          className="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-[17px] rounded-md flex items-center gap-2 transition-colors duration-200 disabled:bg-amber-700/50 disabled:cursor-not-allowed"
         >
           <TrophyIcon />
           <span>Winners</span>
@@ -106,7 +106,7 @@ const ParticipantInput: React.FC<ParticipantInputProps> = ({
           type="button"
           onClick={onShuffle}
           disabled={disabled}
-          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md flex items-center gap-2 transition-colors duration-200 disabled:bg-green-800/50 disabled:cursor-not-allowed"
+          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-[19px] rounded-md flex items-center gap-2 transition-colors duration-200 disabled:bg-green-800/50 disabled:cursor-not-allowed"
           aria-label="Shuffle participants"
         >
           <ShuffleIcon />
