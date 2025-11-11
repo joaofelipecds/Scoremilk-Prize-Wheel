@@ -115,25 +115,13 @@ const App: React.FC = () => {
     };
   }, []);
 
-  // Effect to show fullscreen prompt on first visit
+  // Effect to show fullscreen prompt on every visit
   useEffect(() => {
-    try {
-      const hasSeenPrompt = localStorage.getItem('hasSeenFullscreenPrompt');
-      if (!hasSeenPrompt) {
-        // Use a small delay to not be too intrusive right away.
-        const timer = setTimeout(() => {
-          setShowFullscreenPrompt(true);
-        }, 500);
-        return () => clearTimeout(timer);
-      }
-    } catch (error) {
-      console.error("Error accessing localStorage for fullscreen prompt", error);
-      // Fallback to show the prompt if localStorage is unavailable
-      const timer = setTimeout(() => {
-        setShowFullscreenPrompt(true);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
+    // Use a small delay to not be too intrusive right away.
+    const timer = setTimeout(() => {
+      setShowFullscreenPrompt(true);
+    }, 500);
+    return () => clearTimeout(timer);
   }, []);
 
   const initializeBackgroundMusic = useCallback(() => {
@@ -292,20 +280,10 @@ const App: React.FC = () => {
   const handleEnterFullscreenFromPrompt = useCallback(() => {
     toggleFullScreen();
     setShowFullscreenPrompt(false);
-    try {
-      localStorage.setItem('hasSeenFullscreenPrompt', 'true');
-    } catch (error) {
-      console.error("Error saving fullscreen prompt status to localStorage", error);
-    }
   }, [toggleFullScreen]);
 
   const handleDismissFullscreenPrompt = useCallback(() => {
     setShowFullscreenPrompt(false);
-    try {
-      localStorage.setItem('hasSeenFullscreenPrompt', 'true');
-    } catch (error) {
-      console.error("Error saving fullscreen prompt status to localStorage", error);
-    }
   }, []);
 
   const addParticipant = useCallback((name: string) => {
