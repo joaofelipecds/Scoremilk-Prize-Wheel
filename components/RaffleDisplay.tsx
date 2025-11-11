@@ -13,6 +13,7 @@ interface RaffleDisplayProps {
   onRemoveWinnerEntries: (name: string | null) => void;
   rotation: number;
   tickCount: number;
+  isScaledMode: boolean;
 }
 
 const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
@@ -26,6 +27,7 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
   onRemoveWinnerEntries,
   rotation,
   tickCount,
+  isScaledMode,
 }) => {
   const [flicking, setFlicking] = useState(false);
   const [showRemoveWinnerConfirm, setShowRemoveWinnerConfirm] = useState<boolean>(false);
@@ -95,6 +97,11 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
      );
   };
 
+  const pointerClasses = isScaledMode
+    ? 'w-32 h-40' // Use fixed rem sizes for scaled mode
+    : 'w-[clamp(60px,6.6vw,128px)] h-[clamp(75px,8.3vw,160px)]'; // Use responsive vw/clamp for fit-to-screen mode
+
+
   return (
     <>
       <div className="flex flex-col items-center justify-center gap-4 w-full h-full text-center">
@@ -105,7 +112,7 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
           {participants.length >= 2 && (
             <>
               <div 
-                className="absolute top-[-12%] left-1/2 -translate-x-1/2 w-32 h-40 z-10"
+                className={`absolute top-[-12%] left-1/2 -translate-x-1/2 z-10 ${pointerClasses}`}
                 style={{ transformOrigin: 'center 80%'}}
               >
                 <div className={flicking ? 'is-flicking' : ''}>

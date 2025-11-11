@@ -997,6 +997,7 @@ const App: React.FC = () => {
                 onRemoveWinnerEntries={removeWinnerEntries}
                 rotation={rotation}
                 tickCount={tickCount}
+                isScaledMode={isScaledMode}
               />
             </div>
           </main>
