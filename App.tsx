@@ -6,7 +6,7 @@ import RaffleDisplay from './components/RaffleDisplay';
 import Confetti from './components/Confetti';
 import { EnterFullScreenIcon, ExitFullScreenIcon, MusicOffIcon, MusicOnIcon } from './components/icons';
 
-const logoUrl = 'https://i.imgur.com/GdnLW7r.png';
+const logoUrl = 'https://i.postimg.cc/3RJKCdXW/smlogo1.png';
 
 const getCoreName = (name: string): string => {
   if (!name) return "";
