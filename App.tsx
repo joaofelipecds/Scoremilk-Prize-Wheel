@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import ParticipantInput from './components/ParticipantInput';
 import ParticipantList from './components/ParticipantList';
@@ -5,7 +6,7 @@ import RaffleDisplay from './components/RaffleDisplay';
 import Confetti from './components/Confetti';
 import { EnterFullScreenIcon, ExitFullScreenIcon, MusicOffIcon, MusicOnIcon } from './components/icons';
 
-const logoUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGNsaXBQYXRoIGlkPSJsb2dvLWNsaXAiPjxwYXRoIGQ9Ik04NSAyNUgxNVYxNUMxNSAxMi4yMzg2IDE3LjIzODYgMTAgMjAgMTBIOEM4Mi43NjE0IDEwIDg1IDEyLjIzODYgODUgMTVWMjVaIi8+PHBhdGggZD0iTTE1IDI1TDUgNDBWOTBIOTVWNDBMODUgMjVIMTVaIi8+PC9jbGlwUGF0aD48L2RlZnM+PGcgY2xpcC1wYXRoPSJ1cmwoI2xvZ28tY2xpcCkiPjxnIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMyI+PHBhdGggZD0iTTIwIDAgTDAgMjAiLz48cGF0aCBkPSJNNDAgMCBMMCA0MCIvPjxwYXRoIGQ9Ik02MCAwIEwwIDYwIi8+PHBhdGggZD0iTTgwIDAgTDAgODAiLz48cGF0aCBkPSJNMTAwIDAgTDAgMTAwIi8+PHBhdGggZD0iTTEyMCAwIEwwIDEyMCIvPjxwYXRoIGQ9Ik0xNDAgMCBMMCAxNDAiLz48cGF0aCBkPSJNMTYwIDAgTDAgMTYwIi8+PHBhdGggZD0iTTE4MCAwIEwwIDE4MCIvPjwvZz48L2c+PHBhdGggZD0iTTg1IDI1SDE1VjE1QzE1IDEyLjIzODYgMTcuMjM4NiAxMCAyMCAxMEg4MEM4Mi43NjE0IDEwIDg1IDEyLjIzODYgODUgMTVWMjVaIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTUgMjVMNSA0MFY5MEg5NVY0MEw4NSAyNUgxNVoiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==';
+const logoUrl = 'https://i.imgur.com/GdnLW7r.png';
 
 const getCoreName = (name: string): string => {
   if (!name) return "";
@@ -886,7 +887,7 @@ const App: React.FC = () => {
     setWinner(null);
   }, []);
 
-  const mainTitle = "SCOREMILK PRIZE WHEEL";
+  const mainTitle = "Score Milk Prize Wheel";
 
   return (
     <div className="w-screen h-screen bg-black flex flex-col overflow-hidden">
@@ -955,7 +956,7 @@ const App: React.FC = () => {
                   </span>
                 ))}
               </h1>
-              <p className="text-gray-400 mt-2 text-xl">Want to be here? Participate in Scoremilk Tournaments and Engage on Social Media!</p>
+              <p className="text-gray-400 mt-2 text-lg">Want your name here? Join Score Milk Tournaments and Engage on Social Media!</p>
             </div>
           </header>
           
