@@ -436,63 +436,62 @@ const App: React.FC = () => {
     }
     
     if (context && !audioRef.current.tickSound) {
-        audioRef.current.tickSound = () => {
-            if (!context) return;
-            const now = context.currentTime;
-            const masterGain = context.createGain();
-            // Lowered master volume for a gentler overall sound
-            masterGain.gain.setValueAtTime(0.12, now);
-            masterGain.connect(context.destination);
+      audioRef.current.tickSound = () => {
+          if (!context) return;
+          const now = context.currentTime;
+          const masterGain = context.createGain();
+          masterGain.gain.setValueAtTime(0.15, now); // Adjusted volume for a crisp click
+          masterGain.connect(context.destination);
 
-            // --- The "Tap" part - A softer noise burst ---
-            const noise = context.createBufferSource();
-            const bufferSize = context.sampleRate * 0.05; // shorter buffer
-            const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                data[i] = Math.random() * 2 - 1;
-            }
-            noise.buffer = buffer;
+          // --- Part 1: The "Plastic" component - A sharp, filtered noise burst ---
+          const noise = context.createBufferSource();
+          const bufferSize = context.sampleRate * 0.03; // A very short duration
+          const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+              data[i] = Math.random() * 2 - 1;
+          }
+          noise.buffer = buffer;
 
-            const noiseFilter = context.createBiquadFilter();
-            // Use a lowpass filter to remove harsh high frequencies, making it sound more like a "tap" than a "click"
-            noiseFilter.type = 'lowpass';
-            noiseFilter.frequency.value = 6000;
-            noiseFilter.Q.value = 1;
+          const noiseFilter = context.createBiquadFilter();
+          // A bandpass filter to simulate the resonant frequency of plastic
+          noiseFilter.type = 'bandpass';
+          noiseFilter.frequency.value = 3000; // Mid-high frequency
+          noiseFilter.Q.value = 15; // A fairly sharp resonance
 
-            const noiseGain = context.createGain();
-            noise.connect(noiseFilter);
-            noiseFilter.connect(noiseGain);
-            noiseGain.connect(masterGain);
+          const noiseGain = context.createGain();
+          noise.connect(noiseFilter);
+          noiseFilter.connect(noiseGain);
+          noiseGain.connect(masterGain);
 
-            // A very short, sharp envelope for the tap
-            noiseGain.gain.setValueAtTime(1.0, now);
-            noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.02); // Faster decay
-            noise.start(now);
-            noise.stop(now + 0.02);
+          // A very fast attack and decay for a sharp "tick"
+          noiseGain.gain.setValueAtTime(1.0, now);
+          noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
+          noise.start(now);
+          noise.stop(now + 0.03);
 
-
-            // --- The "Gentle Ring" part - Sine wave oscillators ---
-            // Lower, more harmonic frequencies for a softer tone
-            const frequencies = [1800, 2500, 3200];
-            const oscGain = context.createGain();
-            oscGain.connect(masterGain);
-            
-            frequencies.forEach(freq => {
-                const osc = context.createOscillator();
-                // Use sine waves for a pure, gentle tone instead of harsh square waves
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(freq, now);
-                osc.detune.setValueAtTime(Math.random() * 8 - 4, now);
-                osc.connect(oscGain);
-                osc.start(now);
-                osc.stop(now + 0.07); // Shorter ring duration
-            });
-            
-            // Softer envelope for the ringing tone
-            oscGain.gain.setValueAtTime(0.25, now);
-            oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
-        };
+          // --- Part 2: The "Metallic" component - A short, inharmonic ring ---
+          // Use square waves for a brighter, slightly harsher metallic tone
+          // Inharmonic frequencies give a more realistic "clank"
+          const frequencies = [4500, 5800];
+          const oscGain = context.createGain();
+          oscGain.connect(masterGain);
+          
+          frequencies.forEach(freq => {
+              const osc = context.createOscillator();
+              osc.type = 'square'; // Brighter than sine
+              osc.frequency.setValueAtTime(freq, now);
+              // Slight detuning adds to the metallic character
+              osc.detune.setValueAtTime(Math.random() * 10 - 5, now);
+              osc.connect(oscGain);
+              osc.start(now);
+              osc.stop(now + 0.05); // Very short duration
+          });
+          
+          // A very sharp envelope for the metallic part
+          oscGain.gain.setValueAtTime(0.2, now); // Lower volume than the plastic "thwack"
+          oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+      };
     }
 
     if (context && !audioRef.current.winSound) {
@@ -680,7 +679,7 @@ const App: React.FC = () => {
     const randomOffset = Math.random() * segmentAngle * 0.8 - (segmentAngle * 0.4);
     const targetRotation = fullRotations + targetStopAngle + randomOffset;
     
-    const duration = 15000;
+    const duration = 12000;
     let startTime: number | null = null;
     const startRotation = rotation % 360;
     
