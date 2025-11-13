@@ -694,17 +694,16 @@ const App: React.FC = () => {
         if (elapsedTime >= duration) {
             const finalWinner = wheelParticipants[winnerIndex];
             setRotation(targetRotation);
+            
+            // Play win sound as soon as the wheel stops
+            if (audioRef.current.winSound) {
+                audioRef.current.winSound();
+            }
+
+            // Show winner immediately
             setWinner(finalWinner);
             setIsSpinning(false);
-
-            // The sound originally played 200ms after the wheel stopped.
-            // Playing it 200ms earlier means it plays immediately (0ms delay).
-            setTimeout(() => {
-                if (audioRef.current.winSound) {
-                    audioRef.current.winSound();
-                }
-            }, 0);
-
+            
             const newWinnerEntry = {
               winnerName: finalWinner,
               raffleTitle: 'Prize Wheel Raffle',
