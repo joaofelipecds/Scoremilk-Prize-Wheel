@@ -45,7 +45,6 @@ const App: React.FC = () => {
   });
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(!!document.fullscreenElement);
-  const [showFullscreenPrompt, setShowFullscreenPrompt] = useState<boolean>(false);
   
   const audioRef = useRef<{
     context: AudioContext | null;
@@ -132,15 +131,6 @@ const App: React.FC = () => {
     return () => {
       document.removeEventListener('fullscreenchange', handleFullScreenChange);
     };
-  }, []);
-
-  // Effect to show fullscreen prompt on every visit
-  useEffect(() => {
-    // Use a small delay to not be too intrusive right away.
-    const timer = setTimeout(() => {
-      setShowFullscreenPrompt(true);
-    }, 500);
-    return () => clearTimeout(timer);
   }, []);
 
   const initializeBackgroundMusic = useCallback(() => {
@@ -294,15 +284,6 @@ const App: React.FC = () => {
         document.exitFullscreen();
       }
     }
-  }, []);
-
-  const handleEnterFullscreenFromPrompt = useCallback(() => {
-    toggleFullScreen();
-    setShowFullscreenPrompt(false);
-  }, [toggleFullScreen]);
-
-  const handleDismissFullscreenPrompt = useCallback(() => {
-    setShowFullscreenPrompt(false);
   }, []);
 
   const addParticipant = useCallback((name: string) => {
@@ -935,33 +916,6 @@ const App: React.FC = () => {
         </button>
       </div>
 
-
-      {showFullscreenPrompt && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] p-4 backdrop-blur-sm" onClick={handleDismissFullscreenPrompt}>
-          <div className="bg-gray-950 p-8 rounded-lg shadow-xl w-full max-w-lg text-center animate-fade-in" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-2xl font-bold mb-4 text-gray-100">Welcome to the Prize Wheel!</h2>
-            <p className="text-gray-400 mb-6 text-lg">
-              For the best experience and proper functionality, we recommend entering Full Screen Mode.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <button
-                onClick={handleEnterFullscreenFromPrompt}
-                className="py-3 px-6 bg-indigo-600 hover:bg-indigo-700 rounded-md text-white font-semibold transition-transform duration-200 hover:scale-105 flex items-center justify-center gap-2"
-              >
-                <EnterFullScreenIcon />
-                <span>Enter Full Screen</span>
-              </button>
-              <button
-                onClick={handleDismissFullscreenPrompt}
-                className="py-3 px-6 bg-gray-600 hover:bg-gray-700 rounded-md text-white font-semibold transition-colors"
-              >
-                Maybe Later
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
       <div className="bg-gray-900 text-gray-100 font-sans flex flex-col w-full h-full">
         <div className="p-4 sm:p-6 lg:p-8 flex flex-col flex-grow h-full overflow-hidden">
           <header className="flex-shrink-0 flex justify-center items-center mb-4 gap-6">
