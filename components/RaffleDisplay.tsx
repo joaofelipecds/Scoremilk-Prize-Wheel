@@ -6,6 +6,7 @@ interface RaffleDisplayProps {
   originalParticipants: string[];
   winner: string | null;
   isSpinning: boolean;
+  isReturning: boolean;
   onSpin: () => void;
   onStopSpin: () => void;
   onReset: () => void;
@@ -20,6 +21,7 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
   originalParticipants,
   winner,
   isSpinning,
+  isReturning,
   onSpin,
   onStopSpin,
   onReset,
@@ -47,9 +49,10 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
   }, [winner]);
 
 
-  const canSpin = participants.length >= 2 && !isSpinning;
+  const canSpin = participants.length >= 2 && !isSpinning && !isReturning;
 
   const handleWheelClick = () => {
+    if (isReturning) return;
     if (isSpinning) {
       onStopSpin();
     } else if (canSpin) {
@@ -99,8 +102,7 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
   return (
     <>
       <div
-        className={`relative w-full h-full flex items-center justify-center ${canSpin || isSpinning ? 'cursor-pointer' : ''}`}
-        onClick={handleWheelClick}
+        className="relative w-full h-full flex items-center justify-center"
       >
         <div className="relative w-auto h-full" style={{ aspectRatio: '1 / 1' }}>
           {participants.length >= 2 && (
@@ -130,6 +132,8 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
                 participants={participants}
                 originalParticipants={originalParticipants}
                 rotation={rotation}
+                onClick={handleWheelClick}
+                clickable={canSpin || isSpinning}
               />
             </>
           )}

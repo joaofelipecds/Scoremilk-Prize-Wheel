@@ -18,10 +18,19 @@ const getCoreName = (name: string): string => {
 
 
 const App: React.FC = () => {
-  const [participants, setParticipants] = useState<string[]>([]);
+  const [participants, setParticipants] = useState<string[]>(() => {
+    try {
+      const savedParticipants = localStorage.getItem('participantsList');
+      return savedParticipants ? JSON.parse(savedParticipants) : [];
+    } catch (error) {
+      console.error("Error parsing participants from localStorage", error);
+      return [];
+    }
+  });
   const [wheelParticipants, setWheelParticipants] = useState<string[]>([]);
   const [winner, setWinner] = useState<string | null>(null);
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
+  const [isReturning, setIsReturning] = useState<boolean>(false);
   const [rotation, setRotation] = useState<number>(0);
   const [preSpinRotation, setPreSpinRotation] = useState<number>(0);
   const [tickCount, setTickCount] = useState<number>(0);
@@ -94,6 +103,15 @@ const App: React.FC = () => {
       console.error("Error saving winner history to localStorage", error);
     }
   }, [winnerHistory]);
+
+  // Save participants to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('participantsList', JSON.stringify(participants));
+    } catch (error) {
+      console.error("Error saving participants to localStorage", error);
+    }
+  }, [participants]);
 
   // Effect to handle volume changes when isMuted state changes
   useEffect(() => {
@@ -419,7 +437,7 @@ const App: React.FC = () => {
   }, []);
 
   const handleSpin = useCallback(() => {
-    if (wheelParticipants.length < 2 || isSpinning) return;
+    if (wheelParticipants.length < 2 || isSpinning || isReturning) return;
 
     setPreSpinRotation(rotation);
 
@@ -738,7 +756,7 @@ const App: React.FC = () => {
 
     animationFrameId.current = requestAnimationFrame(spin);
 
-  }, [wheelParticipants, isSpinning, rotation]);
+  }, [wheelParticipants, isSpinning, rotation, isReturning]);
 
   const animateWheelToStart = useCallback((onComplete?: () => void) => {
     if (animationFrameId.current) {
@@ -746,6 +764,8 @@ const App: React.FC = () => {
       animationFrameId.current = null;
     }
   
+    setIsReturning(true);
+
     // Animate the wheel back to its starting position
     const startReturnRotation = rotation;
     const targetReturnRotation = preSpinRotation;
@@ -765,6 +785,7 @@ const App: React.FC = () => {
           cancelAnimationFrame(animationFrameId.current);
         }
         animationFrameId.current = null;
+        setIsReturning(false);
         if (onComplete) {
           onComplete();
         }
@@ -783,7 +804,7 @@ const App: React.FC = () => {
   }, [rotation, preSpinRotation]);
 
   const handleStopSpin = useCallback(() => {
-    if (!isSpinning) return;
+    if (!isSpinning || isReturning) return;
 
     if (audioRef.current.stopSound) {
       audioRef.current.stopSound();
@@ -792,12 +813,13 @@ const App: React.FC = () => {
     animateWheelToStart(() => {
       setIsSpinning(false); // Officially end the spin state
     });
-  }, [isSpinning, animateWheelToStart]);
+  }, [isSpinning, isReturning, animateWheelToStart]);
 
   const resetRaffle = useCallback(() => {
+    if (isReturning) return;
     setWinner(null);
     animateWheelToStart();
-  }, [animateWheelToStart]);
+  }, [animateWheelToStart, isReturning]);
 
   const removeWinnerEntries = useCallback((winnerName: string | null) => {
     if (!winnerName) return;
@@ -987,6 +1009,7 @@ const App: React.FC = () => {
                 originalParticipants={participants}
                 winner={winner}
                 isSpinning={isSpinning}
+                isReturning={isReturning}
                 onSpin={handleSpin}
                 onStopSpin={handleStopSpin}
                 onReset={resetRaffle}

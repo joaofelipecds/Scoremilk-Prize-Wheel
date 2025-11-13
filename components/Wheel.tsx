@@ -4,9 +4,11 @@ interface WheelProps {
   participants: string[];
   originalParticipants: string[];
   rotation: number;
+  onClick: () => void;
+  clickable: boolean;
 }
 
-const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipants }) => {
+const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipants, onClick, clickable }) => {
   const numParticipants = participants.length;
   
   if (numParticipants === 0) return null;
@@ -207,6 +209,16 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipa
         <circle cx="500" cy="500" r="420" fill="none" stroke="#0b0f1c" strokeWidth="2" />
         {pegs}
       </g>
+      
+      {/* Clickable area for the segments */}
+      <circle
+        cx="500"
+        cy="500"
+        r="420"
+        fill="transparent"
+        onClick={clickable ? onClick : undefined}
+        className={clickable ? 'cursor-pointer' : ''}
+      />
       
       <g>
           <circle cx="500" cy="500" r="40" fill="#40260f" />
