@@ -88,17 +88,6 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
       </div>
     );
   };
-  
-  const renderInstructionsOverlay = () => {
-     if (participants.length >= 2 || isSpinning) return null;
-     
-     return (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/90 rounded-xl z-10">
-            <h2 className="text-2xl font-bold text-gray-300">Ready to Spin?</h2>
-            <p className="text-gray-400 mt-2">Add at least 2 participants.</p>
-        </div>
-     );
-  };
 
   return (
     <>
@@ -106,41 +95,37 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
         className="relative w-full h-full flex items-center justify-center"
       >
         <div className="relative w-auto h-full" style={{ aspectRatio: '1 / 1' }}>
-          {participants.length >= 2 && (
-            <>
-              <div 
-                className={`absolute bottom-[93%] left-1/2 -translate-x-1/2 z-10 w-[clamp(4rem,12vh,8rem)]`}
-                style={{ transformOrigin: 'center 80%' }}
-              >
-                <div className={flicking ? 'is-flicking' : ''}>
-                  <svg viewBox="0 0 70 85" className="drop-shadow-lg w-full h-full">
-                      <defs>
-                          <linearGradient id="pointer-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                              <stop offset="0%" style={{stopColor: '#cbd5e1', stopOpacity: 1}} />
-                              <stop offset="50%" style={{stopColor: '#f1f5f9', stopOpacity: 1}} />
-                              <stop offset="100%" style={{stopColor: '#64748b', stopOpacity: 1}} />
-                          </linearGradient>
-                          <filter id="pointer-shadow" x="-50%" y="-50%" width="200%" height="200%">
-                              <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#000" floodOpacity="0.4"/>
-                          </filter>
-                      </defs>
-                      <path d="M35 85 L5 40 C 5 20, 65 20, 65 40 Z" fill="url(#pointer-gradient)" filter="url(#pointer-shadow)" />
-                  </svg>
-                </div>
-              </div>
-            
-              <Wheel 
-                participants={participants}
-                originalParticipants={originalParticipants}
-                rotation={rotation}
-                onClick={handleWheelClick}
-                clickable={canSpin || isSpinning}
-                hasWinner={!!winner}
-              />
-            </>
-          )}
+          <div 
+            className={`absolute bottom-[93%] left-1/2 -translate-x-1/2 z-10 w-[clamp(4rem,12vh,8rem)]`}
+            style={{ transformOrigin: 'center 80%' }}
+          >
+            <div className={flicking ? 'is-flicking' : ''}>
+              <svg viewBox="0 0 70 85" className="drop-shadow-lg w-full h-full">
+                  <defs>
+                      <linearGradient id="pointer-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" style={{stopColor: '#cbd5e1', stopOpacity: 1}} />
+                          <stop offset="50%" style={{stopColor: '#f1f5f9', stopOpacity: 1}} />
+                          <stop offset="100%" style={{stopColor: '#64748b', stopOpacity: 1}} />
+                      </linearGradient>
+                      <filter id="pointer-shadow" x="-50%" y="-50%" width="200%" height="200%">
+                          <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#000" floodOpacity="0.4"/>
+                      </filter>
+                  </defs>
+                  <path d="M35 85 L5 40 C 5 20, 65 20, 65 40 Z" fill="url(#pointer-gradient)" filter="url(#pointer-shadow)" />
+              </svg>
+            </div>
+          </div>
+        
+          <Wheel 
+            participants={participants}
+            originalParticipants={originalParticipants}
+            rotation={rotation}
+            onClick={handleWheelClick}
+            clickable={canSpin || isSpinning}
+            hasWinner={!!winner}
+            isSpinning={isSpinning}
+          />
           {renderWinnerOverlay()}
-          {renderInstructionsOverlay()}
         </div>
       </div>
       

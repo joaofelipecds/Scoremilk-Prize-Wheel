@@ -7,6 +7,7 @@ interface ParticipantInputProps {
   disabled: boolean;
   winnerHistory: { winnerName: string; raffleTitle: string; timestamp: number }[];
   onShuffle: () => void;
+  onAddListClick: () => void;
 }
 
 const ParticipantInput: React.FC<ParticipantInputProps> = ({
@@ -15,6 +16,7 @@ const ParticipantInput: React.FC<ParticipantInputProps> = ({
   disabled,
   winnerHistory,
   onShuffle,
+  onAddListClick,
 }) => {
   const [name, setName] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -86,7 +88,10 @@ const ParticipantInput: React.FC<ParticipantInputProps> = ({
         </button>
         <button
           type="button"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            onAddListClick();
+            setIsModalOpen(true);
+          }}
           disabled={disabled}
           className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-[17.5px] rounded-md flex items-center gap-2 transition-colors duration-200 disabled:bg-purple-800/50 disabled:cursor-not-allowed"
         >
@@ -116,7 +121,7 @@ const ParticipantInput: React.FC<ParticipantInputProps> = ({
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setIsModalOpen(false)}>
-            <div className="bg-gray-950 p-6 rounded-lg shadow-xl w-full max-w-md animate-fade-in" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-purple-950 p-6 rounded-lg shadow-xl w-full max-w-md animate-fade-in" onClick={(e) => e.stopPropagation()}>
                 <h2 className="text-xl font-bold mb-2 text-gray-200">Add a List of Names</h2>
                 <p className="text-gray-400 mb-4 text-sm">Paste a list of names. They can be separated by new lines, commas, or semicolons.</p>
                 <textarea
@@ -135,14 +140,14 @@ const ParticipantInput: React.FC<ParticipantInputProps> = ({
 
       {isWinnersModalOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setIsWinnersModalOpen(false)}>
-            <div className="bg-gray-950 p-6 rounded-lg shadow-xl w-full max-w-md animate-fade-in" onClick={(e) => e.stopPropagation()}>
-                <h2 className="text-xl font-bold mb-4 text-gray-200">Recent Winners (Last 2 Hours)</h2>
+            <div className="bg-amber-200 p-6 rounded-lg shadow-xl w-full max-w-md animate-fade-in" onClick={(e) => e.stopPropagation()}>
+                <h2 className="text-xl font-bold mb-4 text-amber-900">Recent Winners (Last 2 Hours)</h2>
                 {Object.keys(winnersByRaffle).length > 0 ? (
                   <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
                     {Object.entries(winnersByRaffle).map(([title, winners]) => (
                       <div key={title}>
-                        <h3 className="font-semibold text-purple-400 border-b border-gray-700 pb-1 mb-2">{title}</h3>
-                        <ul className="list-disc list-inside space-y-1 text-gray-300">
+                        <h3 className="font-semibold text-purple-800 border-b border-purple-400 pb-1 mb-2">{title}</h3>
+                        <ul className="list-disc list-inside space-y-1 text-amber-800">
                           {winners.map((winner, index) => (
                             <li key={`${winner}-${index}`}>{winner}</li>
                           ))}
@@ -151,10 +156,10 @@ const ParticipantInput: React.FC<ParticipantInputProps> = ({
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-400">No winners have been recorded in the last 2 hours.</p>
+                  <p className="text-amber-700">No winners have been recorded in the last 2 hours.</p>
                 )}
                 <div className="flex justify-end mt-6">
-                    <button onClick={() => setIsWinnersModalOpen(false)} className="py-2 px-4 bg-gray-600 hover:bg-gray-700 rounded-md text-gray-200 transition-colors">Close</button>
+                    <button onClick={() => setIsWinnersModalOpen(false)} className="py-2 px-4 bg-purple-600 hover:bg-purple-700 rounded-md text-white font-semibold transition-colors">Close</button>
                 </div>
             </div>
         </div>

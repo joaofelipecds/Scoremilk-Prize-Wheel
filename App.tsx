@@ -53,6 +53,7 @@ const App: React.FC = () => {
     stopSound: (() => void) | null;
     shuffleSound: (() => void) | null;
     eraserSound: (() => void) | null;
+    paperTurnSound: (() => void) | null;
     backgroundMusic: {
       sources: (OscillatorNode | AudioBufferSourceNode)[];
       timeouts: number[];
@@ -64,6 +65,7 @@ const App: React.FC = () => {
     stopSound: null,
     shuffleSound: null,
     eraserSound: null,
+    paperTurnSound: null,
     backgroundMusic: null,
   });
   const masterGainRef = useRef<GainNode | null>(null);
@@ -348,6 +350,60 @@ const App: React.FC = () => {
   
     setParticipants(newParticipants);
   }, [participants]);
+
+  const handleAddListClick = useCallback(() => {
+    // Audio initialization boilerplate
+    if (!audioRef.current.context) {
+      try {
+        const AudioCtxt = window.AudioContext || (window as any).webkitAudioContext;
+        audioRef.current.context = new AudioCtxt();
+      } catch (e) {
+        console.error("Web Audio API is not supported in this browser.");
+      }
+    }
+    const context = audioRef.current.context;
+    if (context && context.state === 'suspended') {
+      context.resume();
+    }
+
+    // Sound definition (only created once)
+    if (context && !audioRef.current.paperTurnSound) {
+        audioRef.current.paperTurnSound = () => {
+            if (!context) return;
+            const now = context.currentTime;
+            const duration = 0.3;
+
+            const noiseSource = context.createBufferSource();
+            const bufferSize = context.sampleRate * duration;
+            const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            noiseSource.buffer = buffer;
+
+            const bandpass = context.createBiquadFilter();
+            bandpass.type = 'bandpass';
+            bandpass.Q.value = 10;
+            bandpass.frequency.setValueAtTime(400, now);
+            bandpass.frequency.exponentialRampToValueAtTime(4000, now + duration * 0.8);
+
+            const gainNode = context.createGain();
+            gainNode.gain.setValueAtTime(0, now);
+            gainNode.gain.linearRampToValueAtTime(0.3, now + 0.02); // Quick attack
+            gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration); // Decay
+
+            noiseSource.connect(bandpass).connect(gainNode).connect(context.destination);
+            noiseSource.start(now);
+            noiseSource.stop(now + duration);
+        };
+    }
+
+    // Play sound
+    if (audioRef.current.paperTurnSound) {
+        audioRef.current.paperTurnSound();
+    }
+  }, []);
 
   const removeParticipant = useCallback((indexToRemove: number) => {
     setParticipants(prev => prev.filter((_, index) => index !== indexToRemove));
@@ -940,6 +996,7 @@ const App: React.FC = () => {
                 disabled={isSpinning} 
                 winnerHistory={winnerHistory}
                 onShuffle={shuffleWheel}
+                onAddListClick={handleAddListClick}
               />
               <div className="mt-4 border-t border-gray-700 pt-4 flex-grow min-h-0">
                 <ParticipantList

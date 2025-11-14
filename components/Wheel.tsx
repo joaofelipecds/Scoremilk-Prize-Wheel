@@ -1,5 +1,4 @@
-
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 
 interface WheelProps {
   participants: string[];
@@ -8,14 +7,13 @@ interface WheelProps {
   onClick: () => void;
   clickable: boolean;
   hasWinner: boolean;
+  isSpinning: boolean;
 }
 
-const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipants, onClick, clickable, hasWinner }) => {
+const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipants, onClick, clickable, hasWinner, isSpinning }) => {
   const numParticipants = participants.length;
-  
-  if (numParticipants === 0) return null;
 
-  const segmentAngle = 360 / numParticipants;
+  const segmentAngle = numParticipants > 0 ? 360 / numParticipants : 0;
   const radius = 420;
   const center = 500;
 
@@ -23,6 +21,28 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipa
   // ensuring that the color sequence is stable during re-renders (like wheel spinning),
   // but it will be different every time the page is loaded.
   const [randomStartHue] = useMemo(() => [Math.random() * 360], []);
+  
+  // NEW: State to manage the two-stage winner animation
+  const [winnerAnimationStage, setWinnerAnimationStage] = useState<'initial' | 'random' | 'none'>('none');
+
+  // Effect to control the winner animation sequence
+  useEffect(() => {
+    if (hasWinner) {
+      // Stage 1: Start the initial, synchronized blink
+      setWinnerAnimationStage('initial');
+      
+      // After the initial blink animation is complete (1.8s), switch to the random twinkling
+      const timer = setTimeout(() => {
+        setWinnerAnimationStage('random');
+      }, 1800);
+
+      // Cleanup timer if the component unmounts or `hasWinner` changes
+      return () => clearTimeout(timer);
+    } else {
+      // Reset the animation stage if there's no winner
+      setWinnerAnimationStage('none');
+    }
+  }, [hasWinner]);
 
 
   // Memoize the segments and text to prevent recalculation on every render during spin
@@ -60,6 +80,58 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipa
 
       return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     };
+
+    // Special case for a single participant: display a full colored wheel with centered text
+    if (numParticipants === 1) {
+      const participant = participants[0];
+      const originalIndex = originalParticipants.findIndex(p => p === participant);
+      const colorIndex = originalIndex !== -1 ? originalIndex : 0;
+      const fillColor = getColorForIndex(colorIndex);
+      
+      let fontSize = 60; // Base font size
+
+      // Position the vertical text in the center of the bottom half of the wheel
+      const bottomHalfCenterY = center + (radius / 2);
+      
+      // Since text is vertical, we constrain its height.
+      // The available height is the radius (from center to edge of name area), with some padding.
+      const availableHeight = radius * 0.9;
+      // An approximate aspect ratio for characters in this font is ~0.6 (width to height).
+      // Since it's vertical, we care about the total height.
+      const estimatedNaturalHeight = participant.length * fontSize * 0.6;
+
+      // If the estimated height is larger than the available space, calculate a new font size.
+      if (estimatedNaturalHeight > availableHeight) {
+          fontSize = Math.floor(fontSize * (availableHeight / estimatedNaturalHeight));
+      }
+      
+      const textProps: React.SVGProps<SVGTextElement> = {
+          x: center,
+          y: bottomHalfCenterY,
+          dy: "0.35em",
+          fill: "white",
+          fontSize: fontSize,
+          fontFamily: "Comic Sans MS, sans-serif",
+          fontWeight: "700",
+          textAnchor: "middle",
+          className: "select-none tracking-wide",
+          style: { 
+            textShadow: '2px 2px 4px rgba(0,0,0,0.6)',
+            writingMode: 'vertical-rl', // Make text vertical
+            transform: 'rotate(180deg)', // Ensure it reads top-to-bottom
+            transformOrigin: 'center'
+          },
+      };
+      
+      return [(
+        <g key={participant}>
+          <circle cx={center} cy={center} r={radius} fill={fillColor} />
+          <text {...textProps}>
+            {participant}
+          </text>
+        </g>
+      )];
+    }
 
     return participants.map((participant, index) => {
       // Find the participant's original index to get a stable color
@@ -150,7 +222,7 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipa
   const lights = useMemo(() => {
     const lightElements = [];
     const numLights = 36;
-    const animationDuration = 4.0; // Matches the title CSS animation duration
+    const animationDuration = 1.9698; // Matches the title CSS animation duration
 
     // Sequential delays to create a wave effect
     const waveDelays = Array.from({ length: numLights }, (_, i) => 
@@ -160,29 +232,43 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipa
     const lightSegmentAngle = 360 / numLights;
     for (let i = 0; i < numLights; i++) {
         if (i === 0) continue; // Skip the light bulb at the top under the pointer
+        
         const lightAngle = lightSegmentAngle * i;
         const lightAngleRad = (lightAngle - 90) * Math.PI / 180;
         const lightRadius = 460;
         const lightPos = { x: center + Math.cos(lightAngleRad) * lightRadius, y: center + Math.sin(lightAngleRad) * lightRadius };
         
-        const className = hasWinner ? 'winner-blinking-ball' : 'wave-light-ball';
-        const style = {
-          animationDelay: hasWinner ? `${(i % 5) * 0.15}s` : `${waveDelays[i]}s`
-        };
+        // Determine the class and style based on the wheel's state
+        let bulbClassName = 'pre-lit-ball';
+        let bulbStyle: React.CSSProperties = {};
+
+        if (isSpinning && !hasWinner) {
+          bulbClassName = 'wave-light-ball';
+          bulbStyle = { animationDelay: `${waveDelays[i]}s` };
+        } else if (hasWinner) {
+          // Check which stage of the winner animation we are in
+          if (winnerAnimationStage === 'initial') {
+            bulbClassName = 'winner-initial-blink-ball';
+            // No style/delay needed, they all blink together
+          } else if (winnerAnimationStage === 'random') {
+            bulbClassName = 'winner-blinking-ball';
+            bulbStyle = { animationDelay: `${Math.random() * 1.2}s` };
+          }
+        }
 
         lightElements.push(
-            <circle 
-                key={`light-${i}`} 
-                cx={lightPos.x} 
-                cy={lightPos.y} 
-                r="14" 
-                className={className}
-                style={style}
+            <circle
+                key={`light-${i}`}
+                cx={lightPos.x}
+                cy={lightPos.y}
+                r="14"
+                className={bulbClassName}
+                style={bulbStyle}
             />
         );
     }
     return lightElements;
-  }, [hasWinner]);
+  }, [hasWinner, isSpinning, winnerAnimationStage]);
 
   // Memoize the pegs based on participant count
   const pegs = useMemo(() => {
@@ -212,7 +298,11 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipa
         }}
       >
         <g clipPath="url(#circle-clip)">
-          {segments}
+          {numParticipants > 0 ? (
+            segments
+          ) : (
+            <circle cx={center} cy={center} r={radius} fill="#6b7280" />
+          )}
         </g>
         <circle cx="500" cy="500" r="420" fill="none" stroke="#0b0f1c" strokeWidth="2" />
         {pegs}
@@ -235,6 +325,10 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipa
       </g>
 
       <defs>
+        <radialGradient id="glass-bulb-gradient" cx="0.35" cy="0.35" r="0.65">
+            <stop offset="0%" stopColor="white" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="white" stopOpacity="0.1" />
+        </radialGradient>
         <radialGradient id="metallic-peg-gradient" cx="0.35" cy="0.35" r="0.65">
             <stop offset="0%" style={{stopColor: '#f1f5f9'}} />
             <stop offset="100%" style={{stopColor: '#94a3b8'}} />
@@ -243,11 +337,6 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipa
             <stop offset="0%" style={{stopColor: '#f8fafc'}} />
             <stop offset="50%" style={{stopColor: '#94a3b8'}} />
             <stop offset="100%" style={{stopColor: '#475569'}} />
-        </radialGradient>
-        <radialGradient id="glass-bulb-gradient" cx="0.35" cy="0.35" r="0.65">
-          <stop offset="0%" style={{ stopColor: 'rgba(255, 255, 255, 0.6)' }} />
-          <stop offset="30%" style={{ stopColor: 'rgba(200, 200, 220, 0.2)' }} />
-          <stop offset="100%" style={{ stopColor: 'rgba(150, 150, 180, 0.1)' }} />
         </radialGradient>
         <clipPath id="circle-clip">
           <circle cx="500" cy="500" r="420" />

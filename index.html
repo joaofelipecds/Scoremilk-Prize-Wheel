@@ -36,12 +36,20 @@
     animation: flick-pointer 0.1s ease-in-out;
   }
 
+  /* New class for the static, pre-lit idle state of the bulbs - now a glass effect */
+  .pre-lit-ball {
+    fill: url(#glass-bulb-gradient);
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
+  }
+
   /* Keyframes for the wave light-up effect on the wheel lights */
   @keyframes wave-light-up-ball {
+    /* Start and end states match the pre-lit glass state for a seamless loop */
     0%, 100% {
       fill: url(#glass-bulb-gradient);
-      filter: none;
+      filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
     }
+    /* The peak of the wave is a brighter white light */
     40%, 60% {
       fill: #ffffff;
       filter: drop-shadow(0 0 8px #ffffff) drop-shadow(0 0 16px rgba(255, 255, 255, 0.7));
@@ -49,15 +57,41 @@
   }
 
   .wave-light-ball {
-    animation: wave-light-up-ball 4s infinite;
+    /* Base styles match the glass look to prevent the black flash */
+    fill: url(#glass-bulb-gradient);
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
+    animation: wave-light-up-ball 1.9698s infinite;
   }
   
+  /* NEW Keyframes for the initial 3 synchronized blinks for the winner */
+  @keyframes winner-initial-blink {
+    /* 'Off' state is the default glass look */
+    0%, 33%, 66%, 100% {
+      fill: url(#glass-bulb-gradient);
+      filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
+    }
+    /* 'On' state is the yellow glow at the peak of each blink */
+    16.6%, 50%, 83.3% {
+      fill: #fcd34d; /* Amber 300 */
+      filter: drop-shadow(0 0 10px #f59e0b) drop-shadow(0 0 20px rgba(245, 158, 11, 0.8));
+    }
+  }
+
+  /* NEW Class to apply the initial blink animation */
+  .winner-initial-blink-ball {
+    fill: url(#glass-bulb-gradient); /* Base style to prevent flickers */
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
+    animation: winner-initial-blink 1.8s linear 1; /* Runs the 3-blink sequence once */
+  }
+
   /* Keyframes for the celebratory winner light-up effect */
   @keyframes winner-blink {
+    /* Start and end states are the glass look */
     0%, 100% {
-      fill: #f59e0b; /* Amber 600 */
-      filter: drop-shadow(0 0 5px #f59e0b) drop-shadow(0 0 10px rgba(245, 158, 11, 0.6));
+      fill: url(#glass-bulb-gradient);
+      filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
     }
+    /* Mid-point is a celebratory yellow flash */
     50% {
       fill: #fcd34d; /* Amber 300 */
       filter: drop-shadow(0 0 10px #f59e0b) drop-shadow(0 0 20px rgba(245, 158, 11, 0.8));
@@ -65,6 +99,9 @@
   }
 
   .winner-blinking-ball {
+    /* Base styles match the glass look to prevent the black flash */
+    fill: url(#glass-bulb-gradient);
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
     animation: winner-blink 1.2s infinite ease-in-out;
   }
 
@@ -82,7 +119,7 @@
 
   .wave-letter {
     color: #48f5ba;
-    animation: wave-light-up 4s infinite;
+    animation: wave-light-up 1.9698s infinite;
   }
 
 </style>
