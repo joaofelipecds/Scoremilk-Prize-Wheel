@@ -53,7 +53,7 @@ const App: React.FC = () => {
     stopSound: (() => void) | null;
     shuffleSound: (() => void) | null;
     eraserSound: (() => void) | null;
-    paperTurnSound: (() => void) | null;
+    addListSound: (() => void) | null;
     backgroundMusic: {
       sources: (OscillatorNode | AudioBufferSourceNode)[];
       timeouts: number[];
@@ -65,7 +65,7 @@ const App: React.FC = () => {
     stopSound: null,
     shuffleSound: null,
     eraserSound: null,
-    paperTurnSound: null,
+    addListSound: null,
     backgroundMusic: null,
   });
   const masterGainRef = useRef<GainNode | null>(null);
@@ -367,41 +367,39 @@ const App: React.FC = () => {
     }
 
     // Sound definition (only created once)
-    if (context && !audioRef.current.paperTurnSound) {
-        audioRef.current.paperTurnSound = () => {
+    if (context && !audioRef.current.addListSound) {
+        audioRef.current.addListSound = () => {
             if (!context) return;
             const now = context.currentTime;
-            const duration = 0.3;
+            const duration = 0.1;
 
-            const noiseSource = context.createBufferSource();
-            const bufferSize = context.sampleRate * duration;
-            const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                data[i] = Math.random() * 2 - 1;
-            }
-            noiseSource.buffer = buffer;
+            // Use a sine wave for a gentler, more "liquid" click sound.
+            const osc = context.createOscillator();
+            osc.type = 'sine';
 
-            const bandpass = context.createBiquadFilter();
-            bandpass.type = 'bandpass';
-            bandpass.Q.value = 10;
-            bandpass.frequency.setValueAtTime(400, now);
-            bandpass.frequency.exponentialRampToValueAtTime(4000, now + duration * 0.8);
+            // A higher-pitched, quick drop gives a pleasant "bloop" or "pop" sound.
+            const startFrequency = 1200; // High pitch
+            const endFrequency = 600;    // Resolves to a lower pitch
+            osc.frequency.setValueAtTime(startFrequency, now);
+            osc.frequency.exponentialRampToValueAtTime(endFrequency, now + duration);
 
+            // A very sharp volume envelope to make it sound like a click.
             const gainNode = context.createGain();
             gainNode.gain.setValueAtTime(0, now);
-            gainNode.gain.linearRampToValueAtTime(0.3, now + 0.02); // Quick attack
-            gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration); // Decay
+            gainNode.gain.linearRampToValueAtTime(0.4, now + 0.01); // Very fast attack
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration); // Fast decay to silence
 
-            noiseSource.connect(bandpass).connect(gainNode).connect(context.destination);
-            noiseSource.start(now);
-            noiseSource.stop(now + duration);
+            // Connect the audio graph and play the sound
+            osc.connect(gainNode);
+            gainNode.connect(context.destination);
+            osc.start(now);
+            osc.stop(now + duration);
         };
     }
 
     // Play sound
-    if (audioRef.current.paperTurnSound) {
-        audioRef.current.paperTurnSound();
+    if (audioRef.current.addListSound) {
+        audioRef.current.addListSound();
     }
   }, []);
 
