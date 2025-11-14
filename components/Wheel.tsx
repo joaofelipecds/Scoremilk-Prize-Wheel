@@ -222,7 +222,7 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipa
   const lights = useMemo(() => {
     const lightElements = [];
     const numLights = 36;
-    const animationDuration = 1.9698; // Matches the title CSS animation duration
+    const animationDuration = 2.3484; // Controls the speed of the wave effect
 
     // Sequential delays to create a wave effect
     const waveDelays = Array.from({ length: numLights }, (_, i) => 
