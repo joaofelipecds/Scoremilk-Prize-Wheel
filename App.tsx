@@ -320,16 +320,12 @@ const App: React.FC = () => {
   
   const addMultipleParticipants = useCallback((names: string[]) => {
     const newParticipants = [...participants];
-    const existingNamesLower = new Set(newParticipants.map(p => p.toLowerCase()));
   
     for (const name of names) {
       const newName = name.trim();
-      if (!newName || existingNamesLower.has(newName.toLowerCase())) {
-        continue; // Skip empty names and duplicates
+      if (!newName) {
+        continue; // Skip empty names
       }
-  
-      // This name is new, add it to the set for future checks in this same batch
-      existingNamesLower.add(newName.toLowerCase());
   
       const newCoreName = getCoreName(newName);
       let lastSimilarIndex = -1;
