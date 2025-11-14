@@ -66,7 +66,7 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
 
     return (
       <div 
-        className="text-center animate-fade-in absolute inset-0 flex flex-col items-center justify-center bg-gray-950/80 backdrop-blur-sm rounded-xl z-20"
+        className="text-center animate-fade-in absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[84%] h-[84%] flex flex-col items-center justify-center bg-gray-950/80 backdrop-blur-sm rounded-full z-20"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-xl text-gray-400">The winner is...</h3>

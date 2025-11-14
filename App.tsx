@@ -887,7 +887,7 @@ const App: React.FC = () => {
   const mainTitle = "Score Milk Prize Wheel";
 
   return (
-    <div className="w-screen h-screen bg-black flex flex-col overflow-hidden">
+    <div className="w-screen h-screen bg-transparent flex flex-col overflow-hidden">
       <div className="fixed top-4 left-4 z-50 flex items-center gap-3">
         <button
           type="button"
@@ -910,7 +910,7 @@ const App: React.FC = () => {
         </button>
       </div>
 
-      <div className="bg-gray-900 text-gray-100 font-sans flex flex-col w-full h-full">
+      <div className="bg-gray-900/0 text-gray-100 font-sans flex flex-col w-full h-full">
         <div className="p-4 sm:p-6 lg:p-8 flex flex-col flex-grow h-full overflow-hidden">
           <header className="flex-shrink-0 flex justify-center items-center mb-4 gap-6">
             <img src={logoUrl} alt="Scoremilk Logo" className="w-20 h-20" />
@@ -926,14 +926,14 @@ const App: React.FC = () => {
                   </span>
                 ))}
               </h1>
-              <p className="text-gray-400 mt-2 text-lg">Want your name here? Join Score Milk Tournaments and Engage on Social Media!</p>
+              <p className="mt-2 text-lg" style={{ color: '#e1e1e1' }}>Want your name here? Join Score Milk Tournaments and Engage on Social Media!</p>
             </div>
           </header>
           
           {winner && <Confetti />}
 
           <main className="flex-1 min-h-0 flex flex-col xl:flex-row gap-4 max-w-full w-full mx-auto">
-            <div className="h-2/5 xl:h-auto xl:w-1/3 xl:max-w-md bg-gray-950/50 rounded-xl p-6 shadow-lg flex flex-col min-h-0">
+            <div className="h-2/5 xl:h-auto xl:w-1/3 xl:max-w-md bg-black/50 rounded-xl p-6 shadow-lg flex flex-col min-h-0">
               <ParticipantInput 
                 onAddParticipant={addParticipant} 
                 onAddMultipleParticipants={addMultipleParticipants}
@@ -951,7 +951,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex-1 bg-gray-950/50 rounded-xl shadow-lg flex items-center justify-center p-2 sm:p-4 md:p-6 min-h-0">
+            <div className="flex-1 flex items-center justify-center p-2 sm:p-4 md:p-6 min-h-0">
               <RaffleDisplay
                 participants={wheelParticipants}
                 originalParticipants={participants}
@@ -968,10 +968,6 @@ const App: React.FC = () => {
               />
             </div>
           </main>
-
-          <footer className="flex-shrink-0 text-center text-gray-500 mt-4 py-2">
-            <p>Built exclusively for scoremilk.com</p>
-          </footer>
         </div>
       </div>
     </div>

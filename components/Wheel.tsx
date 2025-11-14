@@ -159,7 +159,7 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipa
     for (let i = 0; i < numLights; i++) {
         const lightAngle = lightSegmentAngle * i;
         const lightAngleRad = (lightAngle - 90) * Math.PI / 180;
-        const lightRadius = 480;
+        const lightRadius = 460;
         const lightPos = { x: center + Math.cos(lightAngleRad) * lightRadius, y: center + Math.sin(lightAngleRad) * lightRadius };
         
         lightElements.push(
