@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 
 interface WheelProps {
@@ -6,9 +7,10 @@ interface WheelProps {
   rotation: number;
   onClick: () => void;
   clickable: boolean;
+  hasWinner: boolean;
 }
 
-const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipants, onClick, clickable }) => {
+const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipants, onClick, clickable, hasWinner }) => {
   const numParticipants = participants.length;
   
   if (numParticipants === 0) return null;
@@ -111,7 +113,7 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipa
           },
       };
 
-      // In a radial layout, the available length is a large portion of the radius
+      // In a radial layout, the available text width is a large portion of the radius
       const availableTextWidth = radius * 0.8; 
 
       const estimatedNaturalWidth = participant.length * fontSize * 0.6;
@@ -151,30 +153,36 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipa
     const animationDuration = 4.0; // Matches the title CSS animation duration
 
     // Sequential delays to create a wave effect
-    const delays = Array.from({ length: numLights }, (_, i) => 
+    const waveDelays = Array.from({ length: numLights }, (_, i) => 
         (i / numLights) * animationDuration
     );
 
     const lightSegmentAngle = 360 / numLights;
     for (let i = 0; i < numLights; i++) {
+        if (i === 0) continue; // Skip the light bulb at the top under the pointer
         const lightAngle = lightSegmentAngle * i;
         const lightAngleRad = (lightAngle - 90) * Math.PI / 180;
         const lightRadius = 460;
         const lightPos = { x: center + Math.cos(lightAngleRad) * lightRadius, y: center + Math.sin(lightAngleRad) * lightRadius };
         
+        const className = hasWinner ? 'winner-blinking-ball' : 'wave-light-ball';
+        const style = {
+          animationDelay: hasWinner ? `${(i % 5) * 0.15}s` : `${waveDelays[i]}s`
+        };
+
         lightElements.push(
             <circle 
                 key={`light-${i}`} 
                 cx={lightPos.x} 
                 cy={lightPos.y} 
                 r="14" 
-                className="wave-light-ball"
-                style={{ animationDelay: `${delays[i]}s` }}
+                className={className}
+                style={style}
             />
         );
     }
     return lightElements;
-  }, []);
+  }, [hasWinner]);
 
   // Memoize the pegs based on participant count
   const pegs = useMemo(() => {

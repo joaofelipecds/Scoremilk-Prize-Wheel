@@ -52,6 +52,22 @@
     animation: wave-light-up-ball 4s infinite;
   }
   
+  /* Keyframes for the celebratory winner light-up effect */
+  @keyframes winner-blink {
+    0%, 100% {
+      fill: #f59e0b; /* Amber 600 */
+      filter: drop-shadow(0 0 5px #f59e0b) drop-shadow(0 0 10px rgba(245, 158, 11, 0.6));
+    }
+    50% {
+      fill: #fcd34d; /* Amber 300 */
+      filter: drop-shadow(0 0 10px #f59e0b) drop-shadow(0 0 20px rgba(245, 158, 11, 0.8));
+    }
+  }
+
+  .winner-blinking-ball {
+    animation: winner-blink 1.2s infinite ease-in-out;
+  }
+
   /* Keyframes for the wave light-up effect on the title */
   @keyframes wave-light-up {
     0%, 100% {
