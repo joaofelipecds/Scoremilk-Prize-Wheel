@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import Wheel from './Wheel';
 
@@ -69,7 +70,7 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-xl text-gray-400">The winner is...</h3>
-        <p className="text-4xl sm:text-6xl font-bold my-2 text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-500 animate-pulse">
+        <p className="text-5xl sm:text-7xl lg:text-8xl font-bold my-2 text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-400 animate-pulse drop-shadow-[0_0_12px_#f59e0b]">
           {winner}
         </p>
         <button
