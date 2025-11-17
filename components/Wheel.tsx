@@ -10,7 +10,7 @@ interface WheelProps {
   isSpinning: boolean;
 }
 
-const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipants, onClick, clickable, hasWinner, isSpinning }) => {
+const WheelComponent = React.forwardRef<SVGGElement, WheelProps>(({ participants, rotation, originalParticipants, onClick, clickable, hasWinner, isSpinning }, ref) => {
   const numParticipants = participants.length;
 
   const segmentAngle = numParticipants > 0 ? 360 / numParticipants : 0;
@@ -292,6 +292,7 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipa
       </g>
       
       <g 
+        ref={ref}
         style={{ 
             transform: `rotate(${rotation}deg)`, 
             transformOrigin: '500px 500px',
@@ -344,6 +345,7 @@ const Wheel: React.FC<WheelProps> = ({ participants, rotation, originalParticipa
       </defs>
     </svg>
   );
-};
+});
 
+const Wheel = React.memo(WheelComponent);
 export default Wheel;

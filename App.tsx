@@ -70,6 +70,7 @@ const App: React.FC = () => {
   });
   const masterGainRef = useRef<GainNode | null>(null);
   const animationFrameId = useRef<number | null>(null);
+  const wheelRef = useRef<SVGGElement>(null);
 
   useEffect(() => {
     // Keep the wheel participants in sync with the master list
@@ -743,6 +744,10 @@ const App: React.FC = () => {
 
         if (elapsedTime >= duration) {
             const finalWinner = wheelParticipants[winnerIndex];
+            
+            if (wheelRef.current) {
+              wheelRef.current.style.transform = `rotate(${targetRotation}deg)`;
+            }
             setRotation(targetRotation);
             
             // Play win sound as soon as the wheel stops
@@ -770,6 +775,10 @@ const App: React.FC = () => {
         const easedProgress = easeOutExpo(progress);
         const currentRotation = startRotation + (targetRotation - startRotation) * easedProgress;
         
+        if (wheelRef.current) {
+          wheelRef.current.style.transform = `rotate(${currentRotation}deg)`;
+        }
+        
         const currentAngle = Math.floor(currentRotation / segmentAngle);
         const lastAngle = Math.floor(lastTickAngle / segmentAngle);
 
@@ -779,7 +788,6 @@ const App: React.FC = () => {
         }
         
         lastTickAngle = currentRotation;
-        setRotation(currentRotation);
         animationFrameId.current = requestAnimationFrame(spin);
     };
 
@@ -809,7 +817,11 @@ const App: React.FC = () => {
       const elapsedTime = timestamp - startTime;
   
       if (elapsedTime >= returnDuration) {
+        if (wheelRef.current) {
+          wheelRef.current.style.transform = `rotate(${targetReturnRotation}deg)`;
+        }
         setRotation(targetReturnRotation);
+
         if (animationFrameId.current) {
           cancelAnimationFrame(animationFrameId.current);
         }
@@ -825,7 +837,9 @@ const App: React.FC = () => {
       const easedProgress = easeOutCubic(progress);
       const newRotation = startReturnRotation + (targetReturnRotation - startReturnRotation) * easedProgress;
       
-      setRotation(newRotation);
+      if (wheelRef.current) {
+        wheelRef.current.style.transform = `rotate(${newRotation}deg)`;
+      }
       animationFrameId.current = requestAnimationFrame(animateReturn);
     };
   
@@ -1020,6 +1034,7 @@ const App: React.FC = () => {
                 rotation={rotation}
                 tickCount={tickCount}
                 isFullscreen={isFullscreen}
+                wheelRef={wheelRef}
               />
             </div>
           </main>

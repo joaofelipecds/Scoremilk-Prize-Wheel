@@ -15,9 +15,10 @@ interface RaffleDisplayProps {
   rotation: number;
   tickCount: number;
   isFullscreen: boolean;
+  wheelRef: React.RefObject<SVGGElement>;
 }
 
-const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
+const RaffleDisplayComponent: React.FC<RaffleDisplayProps> = ({
   participants,
   originalParticipants,
   winner,
@@ -30,6 +31,7 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
   rotation,
   tickCount,
   isFullscreen,
+  wheelRef,
 }) => {
   const [flicking, setFlicking] = useState(false);
   const [showRemoveWinnerConfirm, setShowRemoveWinnerConfirm] = useState<boolean>(false);
@@ -124,6 +126,7 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
             clickable={canSpin || isSpinning}
             hasWinner={!!winner}
             isSpinning={isSpinning}
+            ref={wheelRef}
           />
           {renderWinnerOverlay()}
         </div>
@@ -161,4 +164,5 @@ const RaffleDisplay: React.FC<RaffleDisplayProps> = ({
   );
 };
 
+const RaffleDisplay = React.memo(RaffleDisplayComponent);
 export default RaffleDisplay;
