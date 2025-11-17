@@ -6,8 +6,6 @@ import RaffleDisplay from './components/RaffleDisplay';
 import Confetti from './components/Confetti';
 import { EnterFullScreenIcon, ExitFullScreenIcon, MusicOffIcon, MusicOnIcon } from './components/icons';
 
-const logoUrl = 'https://i.postimg.cc/3RJKCdXW/smlogo1.png';
-
 const getCoreName = (name: string): string => {
   if (!name) return "";
   // Extract only alphabetic characters to form the core name for comparison.
@@ -952,20 +950,9 @@ const App: React.FC = () => {
     setWinner(null);
   }, []);
 
-  const mainTitle = "Score Milk Prize Wheel";
-
   return (
     <div className="w-screen h-screen bg-transparent flex flex-col overflow-hidden">
-      <div className="fixed top-4 left-4 z-50 flex items-center gap-3">
-        <button
-          type="button"
-          onClick={toggleMute}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold p-3 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:scale-110"
-          aria-label={isMuted ? 'Unmute background sound' : 'Mute background sound'}
-          title={isMuted ? 'Unmute' : 'Mute'}
-        >
-          {isMuted ? <MusicOffIcon /> : <MusicOnIcon />}
-        </button>
+      <div className="fixed top-4 right-4 z-50 flex items-center gap-3">
         <button
           type="button"
           onClick={toggleFullScreen}
@@ -976,27 +963,19 @@ const App: React.FC = () => {
           {isFullscreen ? <ExitFullScreenIcon /> : <EnterFullScreenIcon />}
           <span>{isFullscreen ? 'Exit' : 'Full Screen'}</span>
         </button>
+        <button
+          type="button"
+          onClick={toggleMute}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold p-3 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:scale-110"
+          aria-label={isMuted ? 'Unmute background sound' : 'Mute background sound'}
+          title={isMuted ? 'Unmute' : 'Mute'}
+        >
+          {isMuted ? <MusicOffIcon /> : <MusicOnIcon />}
+        </button>
       </div>
 
       <div className="bg-gray-900/0 text-gray-100 font-sans flex flex-col w-full h-full">
         <div className="p-4 sm:p-6 lg:p-8 flex flex-col flex-grow h-full overflow-hidden">
-          <header className="flex-shrink-0 flex justify-center items-center mb-4 gap-6">
-            <img src={logoUrl} alt="Scoremilk Logo" className="w-20 h-20" />
-            <div className="text-left">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold">
-                {mainTitle.split('').map((char, index) => (
-                  <span
-                    key={index}
-                    className="wave-letter"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    {char === ' ' ? '\u00A0' : char}
-                  </span>
-                ))}
-              </h1>
-              <p className="mt-2 text-lg" style={{ color: '#e1e1e1' }}>Want your name here? Join Score Milk Tournaments and Engage on Social Media!</p>
-            </div>
-          </header>
           
           {winner && <Confetti />}
 
