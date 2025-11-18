@@ -724,15 +724,31 @@ const App: React.FC = () => {
     const winnerAngle = segmentAngle * winnerIndex + segmentAngle / 2;
     const targetStopAngle = (360 - winnerAngle + 360) % 360;
 
+    // Use continuous rotation to ensure smoothness.
+    // Start from the exact current rotation value.
+    const startRotation = rotation; 
+    // Normalize current angle to 0-360 range properly handling negative numbers
+    const currentAngle = (startRotation % 360 + 360) % 360;
+    
+    // Calculate the shortest forward distance to the target angle
+    let angleDiff = targetStopAngle - currentAngle;
+    if (angleDiff <= 0) {
+        angleDiff += 360;
+    }
+    
     const fullRotations = 12 * 360;
     const randomOffset = Math.random() * segmentAngle * 0.8 - (segmentAngle * 0.4);
-    const targetRotation = fullRotations + targetStopAngle + randomOffset;
+    
+    // Calculate final target rotation based on current rotation + extra spins + adjustments
+    const targetRotation = startRotation + fullRotations + angleDiff + randomOffset;
     
     const duration = 12000;
     let startTime: number | null = null;
-    const startRotation = rotation % 360;
     
-    const easeOutExpo = (x: number): number => x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
+    // Use Quartic easing instead of Exponential for a smoother arrival at the exact target value.
+    // easeOutExpo(1) is approx 0.999, which causes a small visual jump (~4 degrees) when snapping to 1.0.
+    // easeOutQuart(1) is exactly 1.
+    const easeOutQuart = (x: number): number => 1 - Math.pow(1 - x, 4);
     
     let lastTickAngle = startRotation;
 
@@ -770,7 +786,7 @@ const App: React.FC = () => {
         }
 
         const progress = elapsedTime / duration;
-        const easedProgress = easeOutExpo(progress);
+        const easedProgress = easeOutQuart(progress);
         const currentRotation = startRotation + (targetRotation - startRotation) * easedProgress;
         
         if (wheelRef.current) {
