@@ -745,10 +745,8 @@ const App: React.FC = () => {
     const duration = 12000;
     let startTime: number | null = null;
     
-    // Use Quartic easing instead of Exponential for a smoother arrival at the exact target value.
-    // easeOutExpo(1) is approx 0.999, which causes a small visual jump (~4 degrees) when snapping to 1.0.
-    // easeOutQuart(1) is exactly 1.
-    const easeOutQuart = (x: number): number => 1 - Math.pow(1 - x, 4);
+    // Use Cubic easing (power of 3) for a smoother finish.
+    const easeOutCubic = (x: number): number => 1 - Math.pow(1 - x, 3);
     
     let lastTickAngle = startRotation;
 
@@ -786,7 +784,7 @@ const App: React.FC = () => {
         }
 
         const progress = elapsedTime / duration;
-        const easedProgress = easeOutQuart(progress);
+        const easedProgress = easeOutCubic(progress);
         const currentRotation = startRotation + (targetRotation - startRotation) * easedProgress;
         
         if (wheelRef.current) {
