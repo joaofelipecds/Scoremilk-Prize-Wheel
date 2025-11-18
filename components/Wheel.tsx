@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState, useEffect } from 'react';
 
 interface WheelProps {
@@ -302,7 +303,7 @@ const WheelComponent = React.forwardRef<SVGGElement, WheelProps>(({ participants
           {numParticipants > 0 ? (
             segments
           ) : (
-            <circle cx={center} cy={center} r={radius} fill="#6b7280" />
+            <circle cx={center} cy={center} r={radius} fill="#554739" />
           )}
         </g>
         <circle cx="500" cy="500" r="420" fill="none" stroke="#0b0f1c" strokeWidth="2" />
